@@ -1,5 +1,6 @@
 import json
 import os
+import base64
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -38,11 +39,26 @@ def initialize_firebase() -> None:
         return
 
     options = _build_firebase_options()
-    service_account_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+    service_account_value = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+    service_account_base64 = os.getenv("FIREBASE_SERVICE_ACCOUNT_BASE64")
 
     if not firebase_admin._apps:
-        if service_account_path:
-            credential_value = service_account_path.strip()
+        if service_account_base64:
+            try:
+                decoded_credentials = base64.b64decode(
+                    service_account_base64.strip()
+                ).decode("utf-8")
+                credential_info = json.loads(decoded_credentials)
+            except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise RuntimeError(
+                    "FIREBASE_SERVICE_ACCOUNT_BASE64 contains invalid credentials"
+                ) from exc
+            cred = credentials.Certificate(credential_info)
+            if os.getenv("FIREBASE_STORAGE_BUCKET"):
+                options["storageBucket"] = os.getenv("FIREBASE_STORAGE_BUCKET")
+            firebase_admin.initialize_app(cred, options=options)
+        elif service_account_value:
+            credential_value = service_account_value.strip()
             if credential_value.startswith("{"):
                 try:
                     credential_info = json.loads(credential_value)
