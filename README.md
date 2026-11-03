@@ -1,0 +1,53 @@
+# ISIRP1
+
+ISIRP is a hobby research-publication website built with Flask and Firebase
+Firestore. It accepts manuscripts, sends confirmation email, generates
+certificates, and runs an automated academic screening pipeline.
+
+## Local screening and optional AI
+
+The screening pipeline works without an API key. It checks manuscript
+structure, word count, citations, clarity, and methodology, then stores the
+results in Firestore and creates a downloadable report.
+
+To enable the optional Gemini review layer, set one of these environment
+variables in `.env`:
+
+```env
+GEMINI_API_KEY=your-key
+# Optional:
+# GEMINI_MODEL=gemini-2.5-flash
+```
+
+Keys are never required for the local screening fallback and should not be
+committed to Git.
+
+## Verification
+
+Each screened paper can be viewed at:
+
+```text
+/verify/<paper-id>
+```
+
+The verification page shows the paper metadata, screening status, and
+SHA-256 hashes when available. The project is a hobby platform; its reports
+are automated screening feedback, not accredited peer review.
+
+## Research community
+
+The `/community` page adds a person-to-person discussion layer without
+changing the existing submission or dashboard login. Researchers create a
+separate account, browse papers that completed screening, and submit
+structured challenges containing a neutral title, a claim, and supporting
+evidence. Challenges start as `pending` so a future moderator can approve
+them; approved challenges can receive helpful votes, which award reputation
+points and the `Evidence Builder` badge at 10 points.
+
+Community data is stored in three additional Firestore collections:
+`community_users`, `paper_challenges`, and `reputation_events`. Passwords are
+stored as Werkzeug hashes, never as plaintext. Set `FLASK_SECRET_KEY` in
+`.env` before hosting so community sessions remain stable across restarts. Set
+`COMMUNITY_MODERATOR_EMAILS` to a comma-separated allowlist of trusted
+moderator account emails; only those accounts can approve or reject pending
+challenges through the moderation endpoint.

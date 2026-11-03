@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISIRP Research Journal</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="icon" type="image/png" href="/static/isirp-logo.png">
+
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0f172a;
+      --accent: #8b5cf6;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      scroll-behavior: smooth;
+      background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+    }
+
+    .hero-bg {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/img1.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .card {
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .nav-link:after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: 0;
+      left: 0;
+      background-color: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover:after {
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+    }
+
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .gradient-border {
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      position: relative;
+      background: white;
+    }
+
+    .gradient-border::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      border-radius: 8px;
+      z-index: -1;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">ISIRP
+        </div>
+        <div class="text-2xl font-bold text-blue-700">Research Journal</div>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex space-x-8 text-lg">
+        <button onclick="scrollToSection('home')" class="nav-link text-gray-700 hover:text-blue-600">Home</button>
+        <button onclick="scrollToSection('about')" class="nav-link text-gray-700 hover:text-blue-600">About</button>
+        <button onclick="scrollToSection('features')"
+          class="nav-link text-gray-700 hover:text-blue-600">Features</button>
+        <button onclick="scrollToSection('guidelines')"
+          class="nav-link text-gray-700 hover:text-blue-600">Guidelines</button>
+
+
+
+        <a href="/submit" class="btn-primary text-white px-5 py-2 rounded-full font-medium">Submit Paper</a>
+        <a href="/dashboard" class="text-blue-600 font-semibold hover:underline flex items-center">
+          <i class="fas fa-sign-in-alt mr-2"></i> Login
+        </a>
+      </nav>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-button" class="md:hidden text-gray-600">
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white px-4 pt-2 pb-4 border-t">
+      <div class="flex flex-col space-y-3">
+        <button onclick="scrollToSection('home')" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Home</button>
+
+        <button onclick="scrollToSection('about')"
+          class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">About</button>
+        <button onclick="scrollToSection('features')"
+          class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Features</button>
+        <button onclick="scrollToSection('guidelines')"
+          class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Guidelines</button>
+
+
+
+        <a href="/submit" class="btn-primary text-white text-center py-2 px-4 rounded-full font-medium">Submit Paper</a>
+
+
+        <a href="/dashboard"
+          class="text-blue-600 font-semibold text-center py-2 px-4 rounded hover:bg-blue-50">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="home" class="hero-bg py-16 md:py-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+      <div class="max-w-3xl mx-auto">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+          Revolutionizing Research Publication with AI
+        </h1>
+        <p class="mt-6 text-xl text-blue-100 max-w-2xl mx-auto">
+          Submit. Analyze. Publish. Certify — All in one powerful platform.
+        </p>
+        <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+          <a href="/submit" class="btn-primary text-white px-8 py-4 text-lg rounded-full font-medium relative z-10">
+            Submit Your Paper Now
+          </a>
+          <a href="#features"
+            class="bg-white text-blue-600 px-8 py-4 text-lg rounded-full font-medium border-2 border-blue-200 hover:bg-blue-50 relative z-10">
+            Explore Features
+          </a>
+        </div>
+      </div>
+
+
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="py-12 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div>
+          <div class="text-4xl font-bold">8.97</div>
+          <div class="text-blue-100 mt-2">Ciatation Score</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold">98.3%</div>
+          <div class="text-blue-100 mt-2">Satisfaction Rate</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold">15 > minutes</div>
+          <div class="text-blue-100 mt-2">Average Review Time</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold">200+</div>
+          <div class="text-blue-100 mt-2">Countries Reached</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Add this after the Stats Section and before the About Us Section -->
+
+
+  <!-- About Us -->
+  <section id="about" class="py-16 md:py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-blue-800">About Our Platform</h2>
+        <div class="w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        <p class="mt-6 text-gray-600 max-w-2xl mx-auto">
+          We're transforming academic publishing with cutting-edge AI technology
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div class="relative">
+          <img src="/static/img2.jpg" class="w-full max-w-md mx-auto" alt="About AI">
+          <div class="absolute -top-6 -right-6 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full font-medium">
+            <i class="fas fa-lightbulb mr-2"></i> Innovative AI Technology
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold text-blue-800 mb-4">Redefining Academic Publishing</h3>
+          <p class="text-gray-700 leading-relaxed mb-6">
+            At <span class="font-bold text-blue-700">International Scientific and Innovative Research
+              Publication</span>, we're revolutionizing how research is published. Our AI-powered platform evaluates,
+            reviews, and scores scientific papers in minutes, making publication accessible to all researchers.
+          </p>
+
+          <ul class="space-y-4">
+            <li class="flex items-start">
+              <div class="bg-blue-100 text-blue-700 rounded-full p-2 mr-4">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-800">Instant Review System</h4>
+                <p class="text-gray-600">System checks originality, structure, methodology, and relevance</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <div class="bg-blue-100 text-blue-700 rounded-full p-2 mr-4">
+                <i class="fas fa-certificate"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-800">Digital Certification</h4>
+                <p class="text-gray-600">Digital system generated certificate with transparent grading</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-16 md:py-24 bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-blue-800">Platform Features</h2>
+        <div class="w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        <p class="mt-6 text-gray-600 max-w-2xl mx-auto">
+          Everything you need for seamless research publication and certification
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="card bg-white rounded-xl p-8 gradient-border">
+          <div class="feature-icon">
+            <i class="fas fa-robot text-3xl text-blue-600"></i>
+          </div>
+          <h3 class="text-xl font-bold text-center text-blue-700 mb-4">System Review</h3>
+          <p class="text-gray-600 text-center">
+            Every submission is automatically reviewed for quality, originality, and structure by our advanced peer
+            engine.
+          </p>
+        </div>
+
+        <div class="card bg-white rounded-xl p-8 gradient-border">
+          <div class="feature-icon">
+            <i class="fas fa-search text-3xl text-blue-600"></i>
+          </div>
+          <h3 class="text-xl font-bold text-center text-blue-700 mb-4">Open Access Repository</h3>
+          <p class="text-gray-600 text-center">
+            We provide free and unrestricted global access to research, fostering knowledge sharing and innovation.
+          </p>
+        </div>
+
+        <div class="card bg-white rounded-xl p-8 gradient-border">
+          <div class="feature-icon">
+            <i class="fas fa-certificate text-3xl text-blue-600"></i>
+          </div>
+          <h3 class="text-xl font-bold text-center text-blue-700 mb-4">Digital Certification</h3>
+          <p class="text-gray-600 text-center">
+            Accepted papers receive a digital system generated certificate with your name, title, and publication ID.
+          </p>
+        </div>
+
+        <div class="card bg-white rounded-xl p-8 gradient-border">
+          <div class="feature-icon">
+            <i class="fas fa-tag text-3xl text-blue-600"></i>
+          </div>
+          <h3 class="text-xl font-bold text-center text-blue-700 mb-4">Current Issue</h3>
+          <p class="text-gray-600 text-center">
+            Publication in our internal Volume 13 | Issue 7 | Month- July 2025 | Ciatation Score: 8.97.
+          </p>
+        </div>
+
+        <div class="card bg-white rounded-xl p-8 gradient-border">
+          <div class="feature-icon">
+            <i class="fas fa-chart-line text-3xl text-blue-600"></i>
+          </div>
+          <h3 class="text-xl font-bold text-center text-blue-700 mb-4">User Dashboard</h3>
+          <p class="text-gray-600 text-center">
+            Track submissions, review status, AI scores, and download certificates from your personalized dashboard.
+          </p>
+        </div>
+
+        <div class="card bg-white rounded-xl p-8 gradient-border">
+          <div class="feature-icon">
+            <i class="fas fa-credit-card text-3xl text-blue-600"></i>
+          </div>
+          <h3 class="text-xl font-bold text-center text-blue-700 mb-4">Simple Submission</h3>
+          <p class="text-gray-600 text-center">
+            Submit your research paper directly and receive a submission ID for tracking.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Guidelines Section -->
+  <section id="guidelines" class="py-16 md:py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-blue-800">Submission Guidelines</h2>
+        <div class="w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        <p class="mt-6 text-gray-600 max-w-2xl mx-auto">
+          Follow these guidelines to ensure your paper meets our standards
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-12 items-start">
+        <div class="bg-blue-50 rounded-2xl p-8">
+          <h3 class="text-2xl font-bold text-blue-800 mb-6">Paper Requirements</h3>
+
+          <div class="space-y-6">
+            <div>
+              <h4 class="font-bold text-lg text-gray-800 flex items-center">
+                <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">1</span>
+                Formatting
+              </h4>
+              <p class="text-gray-600 ml-11 mt-2">
+                Times New Roman, font size 12, line spacing 1.5
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg text-gray-800 flex items-center">
+                <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">2</span>
+                Structure
+              </h4>
+              <p class="text-gray-600 ml-11 mt-2">
+                Title, Author, Abstract, Introduction, Methodology, Results, Conclusion, References
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg text-gray-800 flex items-center">
+                <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">3</span>
+                Plagiarism
+              </h4>
+              <p class="text-gray-600 ml-11 mt-2">
+                Must be below 15% - checked by our system
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg text-gray-800 flex items-center">
+                <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">4</span>
+                File Format
+              </h4>
+              <p class="text-gray-600 ml-11 mt-2">
+                DOCX or PDF format only
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-lg text-gray-800 flex items-center">
+                <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">5</span>
+                Length
+              </h4>
+              <p class="text-gray-600 ml-11 mt-2">
+                6–12 pages (including references)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold text-blue-800 mb-6">Resources</h3>
+          <p class="text-gray-700 mb-8">
+            Download our templates and examples to help prepare your research paper according to our guidelines.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <a href="/files/Research-paper-template.doc" target="_blank"
+              class="bg-white border border-blue-200 rounded-xl p-6 hover:border-blue-400 transition-colors">
+              <div class="flex items-center">
+                <div class="bg-blue-100 text-blue-700 rounded-lg p-3 mr-4">
+                  <i class="fas fa-book text-3xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-gray-800">Template Docx</h4>
+                  <p class="text-gray-600 text-sm mt-1">Microsoft Word Document</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="/files/Research-paper-template.pdf" target="_blank"
+              class="bg-white border border-blue-200 rounded-xl p-6 hover:border-blue-400 transition-colors">
+              <div class="flex items-center">
+                <div class="bg-blue-100 text-blue-700 rounded-lg p-3 mr-4">
+                  <i class="fas fa-file-pdf text-3xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-gray-800">Template PDF</h4>
+                  <p class="text-gray-600 text-sm mt-1">PDF format template</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="/files/review-on-blue-brain-technology-a-novel-tool-for-studying-brain-and-brain-related-disorders-IJERTV9IS120062.pdf"
+              target="_blank"
+              class="bg-white border border-blue-200 rounded-xl p-6 hover:border-blue-400 transition-colors">
+              <div class="flex items-center">
+                <div class="bg-blue-100 text-blue-700 rounded-lg p-3 mr-4">
+                  <i class="fas fa-book text-3xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-gray-800">Sample Paper</h4>
+                  <p class="text-gray-600 text-sm mt-1">Example of published work</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="/faq" target="_blank"
+              class="bg-white border border-blue-200 rounded-xl p-6 hover:border-blue-400 transition-colors">
+              <div class="flex items-center">
+                <div class="bg-blue-100 text-blue-700 rounded-lg p-3 mr-4">
+                  <i class="fas fa-question-circle text-3xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-gray-800">FAQ</h4>
+                  <p class="text-gray-600 text-sm mt-1">Frequently asked questions</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div class="mt-8 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-circle text-yellow-400 text-xl"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                  <strong>Important:</strong> Papers not following guidelines will be returned for revision.
+                  Our AI system will automatically check for compliance before processing.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold">Ready to Publish Your Research?</h2>
+      <p class="mt-6 text-xl text-blue-100 max-w-3xl mx-auto">
+        Join thousands of researchers who have published with our advanced platform
+      </p>
+      <div class="mt-10">
+        <a href="/submit" class="btn-primary text-white px-10 py-4 text-lg rounded-full font-medium inline-block">
+          Submit Paper Now <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+        <p class="mt-6 text-blue-200">
+          Quick review • Digital certification
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center text-white mb-6">
+            <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
+              ISIRP</div>
+            <div class="text-xl font-bold">Research Journal</div>
+          </div>
+          <p class="mb-4">
+            Revolutionizing academic publishing with advanced review and certification.
+          </p>
+
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Quick Links</h3>
+          <ul class="space-y-3">
+            <li><a href="/" class="hover:text-white">Home</a></li>
+            <li><a href="/#about" class="hover:text-white">About Us</a></li>
+            <li><a href="/#features" class="hover:text-white">Features</a></li>
+
+            <li><a href="/#guidelines" class="hover:text-white">Guidelines</a></li>
+            <li><a href="/submit" class="hover:text-white">Submit Paper</a></li>
+            <li><a href="/submissionagreement" target="_blank" class="hover:text-white">Submission Agreement</a></li>
+            <li><a href="/AIReviewprocess" target="_blank" class="hover:text-white">AI Review Process</a></li>
+            <li><a href="/AboutThisProject" target="_blank" class="hover:text-white">About This Project</a></li>
+
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Resources and Policies</h3>
+          <ul class="space-y-3">
+            <li><a
+                href="/files/review-on-blue-brain-technology-a-novel-tool-for-studying-brain-and-brain-related-disorders-IJERTV9IS120062.pdf"
+                target="_blank" class="hover:text-white">Sample Papers</a></li>
+            <li><a href="/files/Research-paper-template.doc" target="_blank" class="hover:text-white">Templates</a></li>
+
+            <li><a href="/faq" target="_blank" class="hover:text-white">FAQs</a></li>
+            <li><a href="/termsandconditions" target="_blank" class="hover:text-white">Terms and Conditions</a></li>
+            <li><a href="/disclaimer" target="_blank" class="hover:text-white">Disclaimer</a></li>
+            <li><a href="/return" target="_blank" class="hover:text-white">Return Policy</a></li>
+            <li><a href="/privacy" target="_blank" class="hover:text-white">Privacy Policy</a></li>
+            <li><a href="/refund" target="_blank" class="hover:text-white">Refund Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Contact Us</h3>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fas fa-envelope mt-1 mr-3 text-blue-400"></i>
+              <span>teamisirp@gmail.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-phone mt-1 mr-3 text-blue-400"></i>
+              <span>+91 7039095763</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-map-marker-alt mt-1 mr-3 text-blue-400"></i>
+              <span>Mumbai ,Maharashtra, IN 550001</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
+        <p>&copy; 2025 ISIRP. All rights reserved.</p>
+        <p class="mt-2">Designed for innovation. Powered by AI.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    mobileMenuButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Smooth scroll function
+    function scrollToSection(id) {
+      const element = document.getElementById(id);
+      if (element) {
+        window.scrollTo({
+          top: element.offsetTop - 80,
+          behavior: 'smooth'
+        });
+
+        // Close mobile menu if open
+        mobileMenu.classList.add('hidden');
+      }
+    }
+
+    // Add active class to nav links when section is in view
+    document.addEventListener('DOMContentLoaded', function () {
+      const sections = document.querySelectorAll('section');
+      const navLinks = document.querySelectorAll('.nav-link');
+
+      window.addEventListener('scroll', function () {
+        let current = '';
+
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.clientHeight;
+
+          if (pageYOffset >= (sectionTop - 200)) {
+            current = section.getAttribute('id');
+          }
+        });
+
+        navLinks.forEach(link => {
+          link.classList.remove('text-blue-600');
+          link.classList.add('text-gray-700');
+
+          if (link.getAttribute('onclick').includes(current)) {
+            link.classList.remove('text-gray-700');
+            link.classList.add('text-blue-600');
+          }
+        });
+      });
+    });
+
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function (event) {
+      const isClickInsideMenu = mobileMenu.contains(event.target);
+      const isClickOnButton = mobileMenuButton.contains(event.target);
+
+      if (!isClickInsideMenu && !isClickOnButton && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+      }
+    });
+
+  </script>
+</body>
+
+</html>

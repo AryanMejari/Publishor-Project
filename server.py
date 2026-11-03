@@ -1,0 +1,785 @@
+from email.mime.application import MIMEApplication
+from flask import (
+    Flask,
+    request,
+    jsonify,
+    send_file,
+    send_from_directory,
+    render_template,
+    redirect,
+    url_for,
+    session,
+)
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import os
+from datetime import datetime
+from email.utils import formataddr
+import threading
+import random
+import re
+import secrets
+from dotenv import load_dotenv
+from werkzeug.security import check_password_hash, generate_password_hash
+from basic_paper_evaluator import paper_evaluation_process
+from academic_review import run_review
+from firebase_store import (
+    create_paper,
+    get_paper_by_credentials,
+    get_paper_by_id,
+    get_community_user,
+    get_community_user_by_email,
+    create_community_user,
+    update_community_user,
+    create_challenge,
+    get_challenge,
+    update_challenge,
+    list_challenges_for_paper,
+    list_public_papers,
+    create_reputation_event,
+    initialize_firebase,
+    update_paper,
+)
+
+app = Flask(__name__, template_folder='templates', static_folder='static')
+load_dotenv()
+app.secret_key = os.getenv("FLASK_SECRET_KEY") or secrets.token_hex(32)
+REVIEW_REPORTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'review_reports')
+
+def generate_unique_paper_id(max_attempts=20):
+    """Generate a unique paper ID by checking existing Firestore documents."""
+    current_year = datetime.now().year
+
+    for _ in range(max_attempts):
+        random_num = random.randint(1000, 9999)
+        paper_id = f"ISIRP-{current_year}-{random_num}"
+        if not get_paper_by_id(paper_id):
+            return paper_id
+
+    raise RuntimeError("Could not generate a unique paper ID. Please retry.")
+
+@app.route('/files/<filename>')
+def download_file(filename):
+    """Serve static files from the files directory"""
+    return send_from_directory('static/files', filename)
+
+# Configure upload folder
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+    
+# Email configuration
+SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+SMTP_PORT = int(os.getenv('SMTP_PORT', '587'))
+EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS', '')
+EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD', '')
+
+def send_confirmation_email(to_email, paper_id, submission_date):
+    subject = 'Your Research Paper Submission Confirmation'
+    html_body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            
+            <h2 style="color: #2c3e50;">ISIRP - Research Submission Confirmation</h2>
+        </div>
+
+        <p style="font-size: 16px; color: #333333;">Dear Researcher,</p>
+
+        <p style="font-size: 16px; color: #333333;">
+            We are pleased to inform you that your research paper has been successfully submitted on <strong>{submission_date}</strong> to the <strong>International Scientific and Innovative Research Publications (ISIRP)</strong>.
+        </p>
+
+        <p style="font-size: 16px; color: #333333;">
+            <strong>Submission Details:</strong><br>
+            <b>Paper ID:</b> {paper_id}<br>
+            <b>Submission Date:</b> {submission_date}
+        </p>
+
+        <p style="font-size: 16px; color: #333333;">
+            Kindly retain this Paper ID for future correspondence. Our editorial board will now begin the review process. You can expect a response within the next <strong>1-2 Hours.</strong>.
+        </p>
+
+        <p style="font-size: 16px; color: #333333;">
+            If you have any questions or need further assistance, please do not hesitate to contact us at <a href="mailto:teamisirp@gmail.com">teamisirp@gmail.com</a>.
+        </p>
+
+        <p style="font-size: 16px; color: #333333;">
+            Thank you for choosing ISIRP to publish your work. We look forward to reviewing your submission.
+        </p>
+
+        <p style="font-size: 16px; color: #333333;">
+            Best regards,<br>
+            <strong>Editorial Team</strong><br>
+            ISIRP
+        </p>
+
+        <hr style="margin-top: 30px; border: none; border-top: 1px solid #dddddd;">
+
+        <p style="font-size: 12px; color: #888888; text-align: center;">
+            © 2025 ISIRP. All rights reserved.<br>
+            Visit us at <a href="https://isirp.tech" style="color: #888888;">www.isirp.tech</a>
+        </p>
+
+        </div>
+    </body>
+    </html>
+    """
+
+    msg = MIMEMultipart()
+    msg["From"] = formataddr(("ISIRP", EMAIL_ADDRESS))
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    
+    msg.attach(MIMEText(html_body, 'html'))
+    
+    try:
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        return False
+    
+def send_certificates_email(to_email, paper_id, certificate_paths):
+    subject = 'Your Research Paper Certificates'
+    body = f"""
+    <html>
+    <body>
+        <h2>Thank You for Your Submission!</h2>
+        <p>Your research paper (ID: {paper_id}) has been processed successfully.</p>
+        <p>Attached are the certificates for all authors. Please download and distribute them to your co-authors.</p>
+        <p>Best regards,<br>ISIRP Team</p>
+    </body>
+    </html>
+    """
+    
+    msg = MIMEMultipart()
+    msg["From"] = formataddr(("ISIRP", EMAIL_ADDRESS))
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'html'))
+    
+    # Attach certificates
+    for path in certificate_paths:
+        with open(path, 'rb') as f:
+            part = MIMEApplication(f.read(), Name=os.path.basename(path))
+        part['Content-Disposition'] = f'attachment; filename="{os.path.basename(path)}"'
+        msg.attach(part)
+    
+    try:
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Certificate email failed: {e}")
+        return False
+
+# Serve index.html as the main page
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+# Serve submit.html
+@app.route('/submit')
+def submit_form():
+    return render_template('submit.html')
+
+# Existing routes for terms, privacy, etc.
+@app.route('/termsandconditions')
+def terms():
+    return render_template('termsandconditions.html')
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+@app.route('/disclaimer')
+def disclaimer():
+    return render_template('disclaimer.html')
+
+@app.route('/return')
+def return_policy():
+    return render_template('return.html')
+
+@app.route('/refund')
+def refund():
+    return render_template('refund.html')
+
+@app.route('/faq')
+def faq():
+    return render_template('faq.html')
+
+@app.route('/dashboard')
+def dashboard():
+    """Serve the dashboard template"""
+    return render_template('dashboard.html')
+
+
+@app.route('/community')
+def community():
+    """Serve the real-researcher challenge network."""
+    return render_template('community.html')
+
+@app.route('/submissionagreement')
+def submissionagreement():
+    """Serve the dashboard template"""
+    return render_template('submissionagreement.html')
+
+@app.route('/AIReviewprocess')
+def AIReviewprocess():
+    """Serve the dashboard template"""
+    return render_template('AIReviewprocess.html')
+
+@app.route('/submission-success')
+def submission_success():
+    """Display the successful submission confirmation."""
+    return render_template('payment_success.html', paper_id=request.args.get('paper_id'))
+
+@app.route('/prepare-submission', methods=['POST'])
+def prepare_submission():
+    """Save a submission and its manuscript without payment processing."""
+    try:
+        # Check if file part is present
+        if 'manuscript' not in request.files:
+             return jsonify({'success': False, 'error': 'No file part'}), 400
+        
+        file = request.files['manuscript']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'No selected file'}), 400
+            
+        # Get other form data
+        # Note: In multipart/form-data, numbers are strings like '1', '2'
+        paper_title = request.form.get('paper_title')
+        corresponding_author_name = request.form.get('corresponding_author_name')
+        corresponding_author_email = request.form.get('corresponding_author_email')
+        
+        # Validate required fields
+        if not paper_title or not corresponding_author_name or not corresponding_author_email:
+            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+
+        # Save file
+        import werkzeug
+        filename = werkzeug.utils.secure_filename(file.filename)
+        # Ensure unique filename to prevent overwrite
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        filename = f"{timestamp}_{filename}"
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)
+
+        # Generate unique paper ID
+        paper_id = generate_unique_paper_id()
+        submission_date = datetime.now().strftime('%Y-%m-%d')
+
+        create_paper(paper_id, {
+            'paper_title': paper_title,
+            'corresponding_author_name': corresponding_author_name,
+            'corresponding_author_email': corresponding_author_email,
+            'additional_author_name_1': request.form.get('additional_author_name_1'),
+            'additional_author_name_2': request.form.get('additional_author_name_2'),
+            'additional_author_name_3': request.form.get('additional_author_name_3'),
+            'additional_author_name_4': request.form.get('additional_author_name_4'),
+            'additional_author_name_5': request.form.get('additional_author_name_5'),
+            'corresponding_author_certificate': None,
+            'additional_author_cert_1': None,
+            'additional_author_cert_2': None,
+            'additional_author_cert_3': None,
+            'additional_author_cert_4': None,
+            'additional_author_cert_5': None,
+            'submission_date': submission_date,
+            'manuscript_filename': filename,
+            'payment_status': 'not_required',
+            'review_status': 'queued',
+        })
+
+        confirmation_thread = threading.Thread(
+            target=send_confirmation_email,
+            args=(corresponding_author_email, paper_id, submission_date),
+            daemon=True,
+        )
+        confirmation_thread.start()
+
+        certificate_thread = threading.Thread(
+            target=generate_certificates_background,
+            args=(paper_id,),
+            daemon=True,
+        )
+        certificate_thread.start()
+
+        review_thread = threading.Thread(
+            target=run_review,
+            args=(paper_id, file_path),
+            daemon=True,
+        )
+        review_thread.start()
+        
+        return jsonify({'success': True, 'paper_id': paper_id})
+        
+    except Exception as e:
+        print(f"Error in prepare_submission: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Serve static files (CSS, JS, images)
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory('static', filename)
+
+# Login API
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.json
+    paper_id = data.get('paper_id')
+    email = data.get('email')
+    
+    # Validate input
+    if not paper_id or not email:
+        return jsonify({'success': False, 'error': 'Missing paper ID or email'}), 400
+    
+    # Query Firestore
+    paper = get_paper_by_credentials(paper_id, email)
+    
+    if paper:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
+
+# Dashboard data API
+@app.route('/api/dashboard-data', methods=['POST'])
+def api_dashboard_data():
+    data = request.json
+    paper_id = data.get('paper_id')
+    email = data.get('email')
+    
+    paper = get_paper_by_credentials(paper_id, email)
+    
+    if not paper:
+        return jsonify({'success': False, 'error': 'Paper not found'}), 404
+    
+    # Convert paper data to dictionary
+    paper_data = {
+        'paper_title': paper.get('paper_title'),
+        'corresponding_author_name': paper.get('corresponding_author_name'),
+        'corresponding_author_email': paper.get('corresponding_author_email'),
+        'paper_id': paper.get('paper_id'),
+        'submission_date': paper.get('submission_date'),
+        'corresponding_author_certificate': paper.get('corresponding_author_certificate'),
+        'additional_author_name_1': paper.get('additional_author_name_1'),
+        'additional_author_name_2': paper.get('additional_author_name_2'),
+        'additional_author_name_3': paper.get('additional_author_name_3'),
+        'additional_author_name_4': paper.get('additional_author_name_4'),
+        'additional_author_name_5': paper.get('additional_author_name_5'),
+        'additional_author_cert_1': paper.get('additional_author_cert_1'),
+        'additional_author_cert_2': paper.get('additional_author_cert_2'),
+        'additional_author_cert_3': paper.get('additional_author_cert_3'),
+        'additional_author_cert_4': paper.get('additional_author_cert_4'),
+        'additional_author_cert_5': paper.get('additional_author_cert_5'),
+        'payment_status': paper.get('payment_status'),
+        'review_status': paper.get('review_status', 'not_started'),
+        'review_started_at': paper.get('review_started_at'),
+        'review_completed_at': paper.get('review_completed_at'),
+        'review_scores': paper.get('review_scores', {}),
+        'review_findings': paper.get('review_findings', []),
+        'review_section_checks': paper.get('review_section_checks', {}),
+        'review_report_sha256': paper.get('review_report_sha256'),
+        'review_disclosure': paper.get('review_disclosure'),
+        'paper_sha256': paper.get('paper_sha256'),
+        'certificate_sha256': paper.get('certificate_sha256'),
+        'review_counter_arguments': paper.get('review_counter_arguments', []),
+        'review_future_directions': paper.get('review_future_directions', []),
+        'review_ai': paper.get('review_ai', {}),
+        'review_ai_status': paper.get('review_ai_status', 'not_configured'),
+    }
+    
+    return jsonify({'success': True, 'paper': paper_data})
+
+
+def _community_user_from_session():
+    user_id = session.get("community_user_id")
+    return get_community_user(user_id) if user_id else None
+
+
+def _is_community_moderator(user):
+    moderator_emails = {
+        email.strip().lower()
+        for email in os.getenv("COMMUNITY_MODERATOR_EMAILS", "").split(",")
+        if email.strip()
+    }
+    return bool(user and user.get("email", "").lower() in moderator_emails)
+
+
+def _clean_text(value, field_name, minimum=1, maximum=2000):
+    value = (value or "").strip()
+    if len(value) < minimum or len(value) > maximum:
+        raise ValueError(f"{field_name} must be between {minimum} and {maximum} characters")
+    return value
+
+
+def _public_challenge(challenge, can_respond=False):
+    return {
+        "challenge_id": challenge.get("challenge_id"),
+        "paper_id": challenge.get("paper_id"),
+        "title": challenge.get("title"),
+        "challenge_type": challenge.get("challenge_type"),
+        "claim": challenge.get("claim"),
+        "evidence": challenge.get("evidence"),
+        "status": challenge.get("status"),
+        "author_name": challenge.get("author_name"),
+        "created_at": challenge.get("created_at"),
+        "helpful_votes": challenge.get("helpful_votes", 0),
+        "responses": challenge.get("responses", []),
+        "can_respond": can_respond,
+    }
+
+
+@app.route('/api/community/register', methods=['POST'])
+def community_register():
+    data = request.get_json(silent=True) or {}
+    try:
+        display_name = _clean_text(data.get("display_name"), "Display name", 2, 80)
+        email = _clean_text(data.get("email"), "Email", 5, 254).lower()
+        password = _clean_text(data.get("password"), "Password", 8, 128)
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+            raise ValueError("Enter a valid email address")
+    except ValueError as exc:
+        return jsonify({"success": False, "error": str(exc)}), 400
+
+    if get_community_user_by_email(email):
+        return jsonify({"success": False, "error": "An account already exists for this email"}), 409
+
+    user_id = secrets.token_urlsafe(16)
+    create_community_user(
+        user_id,
+        {
+            "display_name": display_name,
+            "email": email,
+            "password_hash": generate_password_hash(password),
+            "reputation": 0,
+            "badges": [],
+            "created_at": datetime.utcnow().isoformat(),
+        },
+    )
+    session["community_user_id"] = user_id
+    return jsonify({"success": True, "user": {"user_id": user_id, "display_name": display_name, "reputation": 0, "badges": []}})
+
+
+@app.route('/api/community/login', methods=['POST'])
+def community_login():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+    user = get_community_user_by_email(email)
+    if not user or not check_password_hash(user.get("password_hash", ""), password):
+        return jsonify({"success": False, "error": "Invalid community credentials"}), 401
+    session["community_user_id"] = user["user_id"]
+    return jsonify(
+        {
+            "success": True,
+            "user": {
+                "user_id": user["user_id"],
+                "display_name": user.get("display_name"),
+                "reputation": user.get("reputation", 0),
+                "badges": user.get("badges", []),
+            },
+        }
+    )
+
+
+@app.route('/api/community/logout', methods=['POST'])
+def community_logout():
+    session.pop("community_user_id", None)
+    return jsonify({"success": True})
+
+
+@app.route('/api/community/me')
+def community_me():
+    user = _community_user_from_session()
+    if not user:
+        return jsonify({"authenticated": False})
+    return jsonify(
+        {
+            "authenticated": True,
+            "user": {
+                "user_id": user["user_id"],
+                "display_name": user.get("display_name"),
+                "reputation": user.get("reputation", 0),
+                "badges": user.get("badges", []),
+            },
+        }
+    )
+
+
+@app.route('/api/community/papers')
+def community_papers():
+    return jsonify({"success": True, "papers": list_public_papers()})
+
+
+@app.route('/api/community/papers/<paper_id>/challenges')
+def community_paper_challenges(paper_id):
+    if not get_paper_by_id(paper_id):
+        return jsonify({"success": False, "error": "Paper not found"}), 404
+    current_user = _community_user_from_session()
+    paper = get_paper_by_id(paper_id)
+    is_author = bool(
+        current_user
+        and current_user.get("email") == (paper.get("corresponding_author_email") or "").lower()
+    )
+    challenges = list_challenges_for_paper(paper_id)
+    visible = [
+        _public_challenge(
+            challenge,
+            can_respond=is_author and challenge.get("status") != "rejected",
+        )
+        for challenge in challenges
+        if challenge.get("status") == "approved" or challenge.get("challenger_id") == (current_user or {}).get("user_id") or is_author
+    ]
+    return jsonify({"success": True, "challenges": visible})
+
+
+@app.route('/api/community/challenges', methods=['POST'])
+def community_create_challenge():
+    user = _community_user_from_session()
+    if not user:
+        return jsonify({"success": False, "error": "Sign in to challenge a paper"}), 401
+    data = request.get_json(silent=True) or {}
+    paper_id = (data.get("paper_id") or "").strip()
+    paper = get_paper_by_id(paper_id)
+    if not paper:
+        return jsonify({"success": False, "error": "Paper not found"}), 404
+    if user.get("email") == (paper.get("corresponding_author_email") or "").strip().lower():
+        return jsonify({"success": False, "error": "Use the author response flow for your own paper"}), 400
+    try:
+        challenge_type = _clean_text(data.get("challenge_type"), "Challenge type", 3, 40)
+        title = _clean_text(data.get("title"), "Title", 5, 140)
+        claim = _clean_text(data.get("claim"), "Claim", 20, 2000)
+        evidence = _clean_text(data.get("evidence"), "Evidence", 20, 4000)
+    except ValueError as exc:
+        return jsonify({"success": False, "error": str(exc)}), 400
+
+    challenge_id = secrets.token_urlsafe(16)
+    create_challenge(
+        challenge_id,
+        {
+            "paper_id": paper_id,
+            "challenger_id": user["user_id"],
+            "author_name": user.get("display_name"),
+            "challenge_type": challenge_type,
+            "title": title,
+            "claim": claim,
+            "evidence": evidence,
+            "status": "pending",
+            "created_at": datetime.utcnow().isoformat(),
+            "helpful_votes": 0,
+            "responses": [],
+        },
+    )
+    return jsonify(
+        {
+            "success": True,
+            "message": "Challenge submitted for author and moderator review",
+            "challenge_id": challenge_id,
+        }
+    ), 201
+
+
+@app.route('/api/community/challenges/<challenge_id>/respond', methods=['POST'])
+def community_respond_to_challenge(challenge_id):
+    user = _community_user_from_session()
+    challenge = get_challenge(challenge_id)
+    if not user or not challenge:
+        return jsonify({"success": False, "error": "Challenge or session not found"}), 404
+    paper = get_paper_by_id(challenge.get("paper_id"))
+    if not paper or user.get("email") != (paper.get("corresponding_author_email") or "").strip().lower():
+        return jsonify({"success": False, "error": "Only the paper author can respond"}), 403
+    try:
+        response_text = _clean_text((request.get_json(silent=True) or {}).get("response"), "Response", 10, 4000)
+    except ValueError as exc:
+        return jsonify({"success": False, "error": str(exc)}), 400
+    responses = challenge.get("responses", [])
+    responses.append(
+        {
+            "author_name": user.get("display_name"),
+            "response": response_text,
+            "created_at": datetime.utcnow().isoformat(),
+        }
+    )
+    update_challenge(challenge_id, {"responses": responses, "status": "answered"})
+    return jsonify({"success": True})
+
+
+@app.route('/api/community/challenges/<challenge_id>/vote', methods=['POST'])
+def community_vote_challenge(challenge_id):
+    user = _community_user_from_session()
+    challenge = get_challenge(challenge_id)
+    if not user or not challenge:
+        return jsonify({"success": False, "error": "Challenge or session not found"}), 404
+    if challenge.get("status") not in {"approved", "answered"}:
+        return jsonify({"success": False, "error": "Only approved challenges can receive votes"}), 400
+    voter_ids = challenge.get("voter_ids", [])
+    if user["user_id"] in voter_ids:
+        return jsonify({"success": False, "error": "You already marked this challenge helpful"}), 409
+    voter_ids.append(user["user_id"])
+    update_challenge(
+        challenge_id,
+        {"voter_ids": voter_ids, "helpful_votes": len(voter_ids)},
+    )
+    challenger = get_community_user(challenge.get("challenger_id"))
+    if challenger:
+        new_reputation = challenger.get("reputation", 0) + 2
+        badges = list(challenger.get("badges", []))
+        if new_reputation >= 10 and "Evidence Builder" not in badges:
+            badges.append("Evidence Builder")
+        update_community_user(
+            challenger["user_id"],
+            {"reputation": new_reputation, "badges": badges},
+        )
+        create_reputation_event(
+            secrets.token_urlsafe(16),
+            {
+                "user_id": challenger["user_id"],
+                "points": 2,
+                "reason": "A researcher marked a challenge helpful",
+                "challenge_id": challenge_id,
+                "created_at": datetime.utcnow().isoformat(),
+            },
+        )
+    return jsonify({"success": True, "helpful_votes": len(voter_ids)})
+
+
+@app.route('/api/community/challenges/<challenge_id>/moderate', methods=['POST'])
+def community_moderate_challenge(challenge_id):
+    user = _community_user_from_session()
+    challenge = get_challenge(challenge_id)
+    if not _is_community_moderator(user):
+        return jsonify({"success": False, "error": "Moderator access is required"}), 403
+    if not challenge:
+        return jsonify({"success": False, "error": "Challenge not found"}), 404
+    status = (request.get_json(silent=True) or {}).get("status")
+    if status not in {"approved", "rejected"}:
+        return jsonify({"success": False, "error": "Status must be approved or rejected"}), 400
+    update_challenge(
+        challenge_id,
+        {
+            "status": status,
+            "moderated_by": user.get("user_id"),
+            "moderated_at": datetime.utcnow().isoformat(),
+        },
+    )
+    return jsonify({"success": True, "status": status})
+
+
+@app.route('/download-review-report')
+def download_review_report():
+    paper_id = request.args.get('paper_id')
+    email = request.args.get('email')
+    if not paper_id or not email:
+        return jsonify({'error': 'Paper ID and email are required'}), 400
+
+    paper = get_paper_by_credentials(paper_id, email)
+    if not paper or not paper.get('review_report_path'):
+        return jsonify({'error': 'Review report is not available'}), 404
+
+    report_path = os.path.abspath(paper['review_report_path'])
+    reports_root = os.path.abspath(REVIEW_REPORTS_DIR) + os.sep
+    if not report_path.startswith(reports_root) or not os.path.isfile(report_path):
+        return jsonify({'error': 'Review report file not found'}), 404
+    return send_file(report_path, as_attachment=True)
+
+
+@app.route('/verify/<paper_id>')
+def verify_paper(paper_id):
+    paper = get_paper_by_id(paper_id)
+    if not paper:
+        return render_template('verify.html', paper=None, paper_id=paper_id), 404
+    return render_template('verify.html', paper={
+        'paper_id': paper.get('paper_id', paper_id),
+        'paper_title': paper.get('paper_title'),
+        'corresponding_author_name': paper.get('corresponding_author_name'),
+        'submission_date': paper.get('submission_date'),
+        'review_status': paper.get('review_status', 'not_started'),
+        'review_completed_at': paper.get('review_completed_at'),
+        'paper_sha256': paper.get('paper_sha256'),
+        'certificate_sha256': paper.get('certificate_sha256'),
+        'review_disclosure': paper.get('review_disclosure'),
+    })
+
+# Certificate download endpoint
+@app.route('/download-certificate')
+def download_certificate():
+    path = request.args.get('path')
+    if not path:
+        return jsonify({'error': 'Missing path parameter'}), 400
+    
+    try:
+        return send_file(path, as_attachment=True)
+    except FileNotFoundError:
+        return jsonify({'error': 'File not found'}), 404
+
+# @app.route('/papers')
+# def show_papers():
+#     search_query = request.args.get('q', '')
+#     
+#     if search_query:
+#         papers = ResearchPaper.query.filter(
+#             (ResearchPaper.paper_title.ilike(f'%{search_query}%')) |
+#             (ResearchPaper.corresponding_author_name.ilike(f'%{search_query}%')) |
+#             (ResearchPaper.additional_author_name_1.ilike(f'%{search_query}%')) |
+#             (ResearchPaper.additional_author_name_2.ilike(f'%{search_query}%')) |
+#             (ResearchPaper.additional_author_name_3.ilike(f'%{search_query}%')) |
+#             (ResearchPaper.additional_author_name_4.ilike(f'%{search_query}%')) |
+#             (ResearchPaper.additional_author_name_5.ilike(f'%{search_query}%'))
+#         ).all()
+#     else:
+#         papers = ResearchPaper.query.all()
+#     
+#     paper_list = []
+#     for paper in papers:
+#         description = f"Research paper titled '{paper.paper_title[:70]}{'...' if len(paper.paper_title) > 70 else ''}'"
+#         
+#         paper_list.append({
+#             'title': paper.paper_title,
+#             'corresponding_author': paper.corresponding_author_name,
+#             'paper_id': paper.paper_id,
+#             'submission_date': paper.submission_date,
+#             'description': description
+#         })
+#     
+#     return render_template('papers.html', papers=paper_list, search_query=search_query)
+
+@app.route('/view-paper/<paper_id>')
+def view_paper(paper_id):
+    paper = get_paper_by_id(paper_id)
+    
+    if not paper:
+        return "Paper not found", 404
+
+@app.route('/AboutThisProject')
+def about_project():
+    return render_template('AboutThisProject.html')
+    
+    file_path = os.path.join(UPLOAD_FOLDER, paper.manuscript_filename)
+    
+    if not os.path.exists(file_path):
+        return "File not found", 404
+    
+    return send_file(file_path, as_attachment=False)
+
+def generate_certificates_background(paper_id):
+    # This will run in a separate thread
+    from certificate_generator import generate_certificates
+    generate_certificates(paper_id)
+
+if __name__ == '__main__':
+    initialize_firebase()
+    print("Firebase initialized successfully")
+    print("Server starting on http://127.0.0.1:5000")
+    
+    app.run(debug=True, port=5000)

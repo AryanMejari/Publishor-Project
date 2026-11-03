@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paper Verification - ISIRP</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+  <main class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
+    {% if paper %}
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-2xl">✓</div>
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">Submission Verified</h1>
+        <p class="text-sm text-slate-500">ISIRP automated record lookup</p>
+      </div>
+    </div>
+    <dl class="space-y-4 text-slate-700">
+      <div><dt class="text-sm text-slate-500">Paper ID</dt><dd class="font-bold text-indigo-700">{{ paper.paper_id }}</dd></div>
+      <div><dt class="text-sm text-slate-500">Title</dt><dd>{{ paper.paper_title }}</dd></div>
+      <div><dt class="text-sm text-slate-500">Author</dt><dd>{{ paper.corresponding_author_name }}</dd></div>
+      <div><dt class="text-sm text-slate-500">Submission date</dt><dd>{{ paper.submission_date }}</dd></div>
+      <div><dt class="text-sm text-slate-500">Screening status</dt><dd class="capitalize">{{ paper.review_status.replace('_', ' ') }}</dd></div>
+      {% if paper.review_completed_at %}<div><dt class="text-sm text-slate-500">Screening completed</dt><dd>{{ paper.review_completed_at }}</dd></div>{% endif %}
+    </dl>
+    <div class="mt-6 p-4 bg-slate-50 rounded-lg text-xs text-slate-600 break-all">
+      <p><strong>Submitted file SHA-256:</strong> {{ paper.paper_sha256 or 'Not available' }}</p>
+      <p class="mt-2"><strong>Certificate SHA-256:</strong> {{ paper.certificate_sha256 or 'Not available' }}</p>
+    </div>
+    <p class="mt-6 text-xs text-slate-500">{{ paper.review_disclosure }}</p>
+    {% else %}
+    <h1 class="text-2xl font-bold text-red-600">Record Not Found</h1>
+    <p class="mt-3 text-slate-600">No ISIRP record was found for {{ paper_id }}.</p>
+    {% endif %}
+    <a href="/" class="inline-block mt-8 text-indigo-600 hover:underline">Back to home</a>
+  </main>
+</body>
+</html>

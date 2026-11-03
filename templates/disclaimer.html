@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disclaimer - ISIRP Research Journal</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="icon" type="image/png" href="/static/isirp-logo.png">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0f172a;
+      --accent: #8b5cf6;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      scroll-behavior: smooth;
+      background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+    }
+
+    .hero-bg {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/img1.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .card {
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .nav-link:after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: 0;
+      left: 0;
+      background-color: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover:after {
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+    }
+
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .gradient-border {
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      position: relative;
+      background: white;
+    }
+
+    .gradient-border::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      border-radius: 8px;
+      z-index: -1;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* FIX FOR MOBILE MENU ALIGNMENT */
+    #mobile-menu {
+      text-align: center;
+    }
+
+    #mobile-menu .flex {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #mobile-menu a {
+      text-align: center;
+      width: 100%;
+      display: block;
+      padding: 12px 16px;
+    }
+
+    #mobile-menu .btn-primary {
+      display: inline-flex;
+      justify-content: center;
+      width: 80%;
+      margin: 8px auto;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  <!-- Header (Same as /) -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">ISIRP
+        </div>
+        <div class="text-2xl font-bold text-blue-700">Research Journal</div>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex space-x-8 text-lg">
+        <a href="/" class="nav-link text-gray-700 hover:text-blue-600">Home</a>
+        <a href="/#about" class="nav-link text-gray-700 hover:text-blue-600">About</a>
+        <a href="/#features" class="nav-link text-gray-700 hover:text-blue-600">Features</a>
+        <a href="/#guidelines" class="nav-link text-gray-700 hover:text-blue-600">Guidelines</a>
+
+
+        <a href="/submit" class="btn-primary text-white px-5 py-2 rounded-full font-medium">Submit Paper</a>
+        <a href="dashboard.html" class="text-blue-600 font-semibold hover:underline flex items-center">
+          <i class="fas fa-sign-in-alt mr-2"></i> Login
+        </a>
+      </nav>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-button" class="md:hidden text-gray-600">
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white px-4 pt-2 pb-4 border-t">
+      <div class="flex flex-col space-y-3">
+        <a href="/" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Home</a>
+
+        <a href="/#about" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">About</a>
+        <a href="/#features" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Features</a>
+        <a href="/#guidelines" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Guidelines</a>
+
+
+        <a href="/submit" class="btn-primary text-white text-center py-2 px-4 rounded-full font-medium">Submit Paper</a>
+        <a href="dashboard.html"
+          class="text-blue-600 font-semibold text-center py-2 px-4 rounded hover:bg-blue-50">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Disclaimer Section -->
+  <section class="py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold text-blue-800">Disclaimer</h1>
+        <div class="w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        <p class="mt-6 text-gray-600">Last updated: July 31, 2025</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+        <div class="prose max-w-none">
+          <h2 class="text-xl font-bold text-blue-700 mb-4">1. Content Responsibility</h2>
+          <p class="mb-6 text-gray-700">
+            The views and opinions expressed in published papers are those of the authors and do not
+            necessarily reflect the official policy or position of ISIRP. We are not responsible for
+            the accuracy or reliability of any content submitted by authors.
+          </p>
+
+          <h2 class="text-xl font-bold text-blue-700 mb-4">2. No Warranty</h2>
+          <p class="mb-6 text-gray-700">
+            Our services are provided "as is" without warranty of any kind. We do not guarantee that:
+            <br>- The service will be uninterrupted or error-free
+            <br>- The results obtained from using our service will be accurate or reliable
+            <br>- The quality of any paper will meet your expectations
+          </p>
+
+          <h2 class="text-xl font-bold text-blue-700 mb-4">3. Limitation of Liability</h2>
+          <p class="mb-6 text-gray-700">
+            In no event shall ISIRP be liable for any direct, indirect, incidental, or consequential
+            damages arising from the use of or inability to use our services, even if we have been
+            advised of the possibility of such damages.
+          </p>
+
+          <h2 class="text-xl font-bold text-blue-700 mb-4">4. Citation Indexing</h2>
+          <p class="mb-6 text-gray-700">
+            While we aim for indexing in major databases, we cannot guarantee specific indexing outcomes.
+            Authors should verify indexing status with respective databases.
+          </p>
+
+          <h2 class="text-xl font-bold text-blue-700 mb-4">5. External Links</h2>
+          <p class="mb-6 text-gray-700">
+            Our website may contain links to external sites. We have no control over and assume no
+            responsibility for the content or practices of any third-party sites.
+          </p>
+          <h2 class="text-xl font-bold text-blue-700 mb-4">6. AI-Assisted Review Process</h2>
+          <p class="mb-6 text-gray-700">
+            The review process on this platform is supported by Artificial Intelligence tools to enhance efficiency and
+            provide preliminary analysis. However, all AI-generated insights are reviewed by human moderators before
+            final decisions are made.
+
+            Accuracy: While we strive for accuracy, AI systems may produce results that are incomplete or contain
+            errors. Please do not rely solely on AI-generated information for critical decisions.
+
+            Responsibility: The final responsibility for all review outcomes rests with the human reviewers and the
+            organization operating this platform.
+
+            Data Usage: Any data you submit may be processed by AI models to facilitate review. We take appropriate
+            measures to protect your privacy in accordance with our Privacy Policy.
+
+            By using this service, you acknowledge and accept the use of AI in the review process and understand its
+            limitations.
+          </p>
+
+          <h2 class="text-xl font-bold text-blue-700 mb-4">6. Changes to Disclaimer</h2>
+          <p class="mb-6 text-gray-700">
+            We reserve the right to modify this disclaimer at any time. Your continued use of our
+            services constitutes acceptance of any changes.
+          </p>
+
+          <p class="text-gray-700">
+            For any questions regarding this disclaimer, please contact us at teamisirp@gmail.com
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer (Same as /) -->
+  <footer class="bg-gray-900 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center text-white mb-6">
+            <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
+              ISIRP</div>
+            <div class="text-xl font-bold">Research Journal</div>
+          </div>
+          <p class="mb-4">
+            Revolutionizing academic publishing with advanced review and certification.
+          </p>
+
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Quick Links</h3>
+          <ul class="space-y-3">
+            <li><a href="/" class="hover:text-white">Home</a></li>
+            <li><a href="/#about" class="hover:text-white">About Us</a></li>
+            <li><a href="/#features" class="hover:text-white">Features</a></li>
+
+            <li><a href="/#guidelines" class="hover:text-white">Guidelines</a></li>
+            <li><a href="/submit" class="hover:text-white">Submit Paper</a></li>
+            <li><a href="/submissionagreement" target="_blank" class="hover:text-white">Submission Agreement</a></li>
+            <li><a href="/AIReviewprocess" target="_blank" class="hover:text-white">AI Review Process</a></li>
+            <li><a href="/AboutThisProject" target="_blank" class="hover:text-white">About This Project</a></li>
+
+
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Resources and Policies</h3>
+          <ul class="space-y-3">
+            <li><a href="/sample_paper" target="_blank" class="hover:text-white">Sample Papers</a></li>
+            <li><a href="Research-paper-template.doc" target="_blank" class="hover:text-white">Templates</a></li>
+
+            <li><a href="/faq" target="_blank" class="hover:text-white">FAQs</a></li>
+            <li><a href="/termsandconditions" target="_blank" class="hover:text-white">Terms and Conditions</a></li>
+            <li><a href="/disclaimer" target="_blank" class="hover:text-white">Disclaimer</a></li>
+            <li><a href="/return" target="_blank" class="hover:text-white">Return Policy</a></li>
+            <li><a href="/privacy" target="_blank" class="hover:text-white">Privacy Policy</a></li>
+            <li><a href="/refund" target="_blank" class="hover:text-white">Refund Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Contact Us</h3>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fas fa-envelope mt-1 mr-3 text-blue-400"></i>
+              <span>teamisirp@gmail.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-phone mt-1 mr-3 text-blue-400"></i>
+              <span>+91 7039095763</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-map-marker-alt mt-1 mr-3 text-blue-400"></i>
+              <span>Mumbai ,Maharashtra, IN 550001</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
+        <p>&copy; 2025 ISIRP. All rights reserved.</p>
+        <p class="mt-2">Designed for innovation. Powered by AI.</p>
+      </div>
+    </div>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      mobileMenuButton.addEventListener('click', function () {
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function (event) {
+        const isClickInsideMenu = mobileMenu.contains(event.target);
+        const isClickOnButton = mobileMenuButton.contains(event.target);
+
+        if (!isClickInsideMenu && !isClickOnButton && !mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

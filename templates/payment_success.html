@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Successful - ISIRP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-check-circle text-green-500 text-4xl"></i>
+        </div>
+        <h2 class="text-3xl font-bold text-green-600 mb-4">Submission Successful!</h2>
+        <p class="text-gray-600 mb-6">
+            Thank you for your submission. Your research paper has been saved successfully.
+        </p>
+        
+        {% if paper_id %}
+        <div class="bg-blue-50 rounded-xl p-6 mb-6">
+            <div class="font-medium text-gray-800 mb-2">Your Paper ID:</div>
+            <div class="text-2xl font-bold text-blue-700">{{ paper_id }}</div>
+            <div class="text-sm text-gray-600 mt-2">Keep this ID for future reference</div>
+        </div>
+        {% endif %}
+        
+        <p class="text-gray-600 mb-8">
+            Keep your Paper ID and corresponding author email. You can use both to log in to the dashboard
+            and track your paper's progress.
+        </p>
+        
+        <div class="space-y-4">
+            <a href="/dashboard" class="block w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition">
+                <i class="fas fa-tachometer-alt mr-2"></i> Go to Dashboard / Login
+            </a>
+            <a href="/" class="block w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
+                <i class="fas fa-home mr-2"></i> Back to Home
+            </a>
+        </div>
+        
+        <div class="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-500">
+            <p>Use your Paper ID and email address on the dashboard login form.</p>
+            <p class="mt-2">Need help? Contact us at <span class="text-blue-600">teamisirp@gmail.com</span></p>
+        </div>
+    </div>
+</body>
+</html>

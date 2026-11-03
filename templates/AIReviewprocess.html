@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Assisted Review Process - ISIRP Research Journal</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="icon" type="image/png" href="/static/isirp-logo.png">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0f172a;
+      --accent: #8b5cf6;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      scroll-behavior: smooth;
+      background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+    }
+
+    .hero-bg {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/img1.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .card {
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .nav-link:after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: 0;
+      left: 0;
+      background-color: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover:after {
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+    }
+
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .gradient-border {
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      position: relative;
+      background: white;
+    }
+
+    .gradient-border::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      border-radius: 8px;
+      z-index: -1;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .ai-feature-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .ai-feature-icon {
+      background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* FIX FOR MOBILE MENU ALIGNMENT */
+    #mobile-menu {
+      text-align: center;
+    }
+
+    #mobile-menu .flex {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #mobile-menu a {
+      text-align: center;
+      width: 100%;
+      display: block;
+      padding: 12px 16px;
+    }
+
+    #mobile-menu .btn-primary {
+      display: inline-flex;
+      justify-content: center;
+      width: 80%;
+      margin: 8px auto;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">ISIRP
+        </div>
+        <div class="text-2xl font-bold text-blue-700">Research Journal</div>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex space-x-8 text-lg">
+        <a href="/" class="nav-link text-gray-700 hover:text-blue-600">Home</a>
+        <a href="/#about" class="nav-link text-gray-700 hover:text-blue-600">About</a>
+        <a href="/#features" class="nav-link text-gray-700 hover:text-blue-600">Features</a>
+        <a href="/#guidelines" class="nav-link text-gray-700 hover:text-blue-600">Guidelines</a>
+
+
+        <a href="/submit" class="btn-primary text-white px-5 py-2 rounded-full font-medium">Submit Paper</a>
+        <a href="dashboard.html" class="text-blue-600 font-semibold hover:underline flex items-center">
+          <i class="fas fa-sign-in-alt mr-2"></i> Login
+        </a>
+      </nav>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-button" class="md:hidden text-gray-600">
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white px-4 pt-2 pb-4 border-t">
+      <div class="flex flex-col space-y-3">
+        <a href="/" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Home</a>
+
+        <a href="/#about" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">About</a>
+        <a href="/#features" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Features</a>
+        <a href="/#guidelines" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Guidelines</a>
+
+
+        <a href="/submit" class="btn-primary text-white text-center py-2 px-4 rounded-full font-medium">Submit Paper</a>
+        <a href="dashboard.html"
+          class="text-blue-600 font-semibold text-center py-2 px-4 rounded hover:bg-blue-50">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- AI-Assisted Review Process Section -->
+  <section class="py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold text-blue-800">AI-Assisted Review Process</h1>
+        <div class="w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        <p class="mt-6 text-gray-600">Enhancing research evaluation with artificial intelligence</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-md p-6 md:p-8 mb-10">
+        <div class="prose max-w-none">
+          <p class="mb-6 text-gray-700 text-lg">
+            At ISIRP Research Journal, we use Artificial Intelligence (AI) to assist in the initial review of submitted
+            research papers.
+            This process is designed to ensure a faster, unbiased, and consistent evaluation of basic submission
+            standards.
+          </p>
+
+          <div class="flex items-center bg-blue-50 rounded-lg p-4 mb-8">
+            <i class="fas fa-robot text-3xl text-blue-600 mr-4"></i>
+            <p class="text-blue-800 font-medium">
+              Our AI review system helps maintain high standards while reducing the time authors wait for initial
+              feedback.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8 mb-12">
+        <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+          <h2 class="text-xl font-bold text-blue-700 mb-6">What the AI Review Covers</h2>
+
+          <div class="ai-feature-item">
+            <div class="ai-feature-icon">
+              <i class="fas fa-project-diagram"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-800">Structure & Formatting</h3>
+              <p class="text-gray-600 text-sm">Checks that the paper follows a coherent structure (title, abstract,
+                introduction, methodology, results, references).</p>
+            </div>
+          </div>
+
+          <div class="ai-feature-item">
+            <div class="ai-feature-icon">
+              <i class="fas fa-language"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-800">Language & Clarity</h3>
+              <p class="text-gray-600 text-sm">Identifies grammar, spelling, and readability issues.</p>
+            </div>
+          </div>
+
+          <div class="ai-feature-item">
+            <div class="ai-feature-icon">
+              <i class="fas fa-search"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-800">Plagiarism Screening</h3>
+              <p class="text-gray-600 text-sm">Compares content against online sources to detect potential duplication.
+              </p>
+            </div>
+          </div>
+
+          <div class="ai-feature-item">
+            <div class="ai-feature-icon">
+              <i class="fas fa-book"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-800">Reference Check</h3>
+              <p class="text-gray-600 text-sm">Ensures citations are present and properly formatted.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+          <h2 class="text-xl font-bold text-blue-700 mb-6">What the AI Review Does Not Do</h2>
+
+          <div class="ai-feature-item">
+            <div class="ai-feature-icon bg-red-100 text-red-600">
+              <i class="fas fa-times"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-800">Scientific Evaluation</h3>
+              <p class="text-gray-600 text-sm">Evaluate the scientific accuracy or technical validity of results.</p>
+            </div>
+          </div>
+
+          <div class="ai-feature-item">
+            <div class="ai-feature-icon bg-red-100 text-red-600">
+              <i class="fas fa-user-friends"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-800">Replace Peer Review</h3>
+              <p class="text-gray-600 text-sm">Replace traditional peer review by subject matter experts.</p>
+            </div>
+          </div>
+
+          <div class="ai-feature-item">
+            <div class="ai-feature-icon bg-red-100 text-red-600">
+              <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-800">Decision Making</h3>
+              <p class="text-gray-600 text-sm">Guarantee acceptance or rejection based on academic merit.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+        <h2 class="text-xl font-bold text-blue-700 mb-6">Why We Use AI Review</h2>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="text-center p-4 rounded-lg bg-blue-50">
+            <div class="ai-feature-icon mx-auto mb-4">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800 mb-2">Speed</h3>
+            <p class="text-gray-600 text-sm">Papers can be screened within minutes instead of weeks.</p>
+          </div>
+
+          <div class="text-center p-4 rounded-lg bg-blue-50">
+            <div class="ai-feature-icon mx-auto mb-4">
+              <i class="fas fa-universal-access"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800 mb-2">Accessibility</h3>
+            <p class="text-gray-600 text-sm">Authors receive instant feedback for improvements.</p>
+          </div>
+
+          <div class="text-center p-4 rounded-lg bg-blue-50">
+            <div class="ai-feature-icon mx-auto mb-4">
+              <i class="fas fa-balance-scale"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800 mb-2">Fairness</h3>
+            <p class="text-gray-600 text-sm">Removes human bias in initial screening.</p>
+          </div>
+        </div>
+
+        <div class="mt-8 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <i class="fas fa-exclamation-circle text-yellow-500 mt-1 mr-3"></i>
+            </div>
+            <div>
+              <p class="text-yellow-800">
+                <span class="font-semibold">Note:</span> The AI review is an assistive tool. Final responsibility for
+                the quality, accuracy, and originality of the content remains with the author(s).
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center text-white mb-6">
+            <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
+              ISIRP</div>
+            <div class="text-xl font-bold">Research Journal</div>
+          </div>
+          <p class="mb-4">
+            Revolutionizing academic publishing with advanced review and certification.
+          </p>
+
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Quick Links</h3>
+          <ul class="space-y-3">
+            <li><a href="/" class="hover:text-white">Home</a></li>
+            <li><a href="/#about" class="hover:text-white">About Us</a></li>
+            <li><a href="/#features" class="hover:text-white">Features</a></li>
+
+            <li><a href="/#guidelines" class="hover:text-white">Guidelines</a></li>
+            <li><a href="/submit" class="hover:text-white">Submit Paper</a></li>
+            <li><a href="/submissionagreement" target="_blank" class="hover:text-white">Submission Agreement</a></li>
+            <li><a href="/AIReviewprocess" target="_blank" class="hover:text-white">AI Review Process</a></li>
+            <li><a href="/AboutThisProject" target="_blank" class="hover:text-white">About This Project</a></li>
+
+
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Resources and Policies</h3>
+          <ul class="space-y-3">
+            <li><a href="/sample_paper" target="_blank" class="hover:text-white">Sample Papers</a></li>
+            <li><a href="Research-paper-template.doc" target="_blank" class="hover:text-white">Templates</a></li>
+
+            <li><a href="/faq" target="_blank" class="hover:text-white">FAQs</a></li>
+            <li><a href="/termsandconditions" target="_blank" class="hover:text-white">Terms and Conditions</a></li>
+            <li><a href="/disclaimer" target="_blank" class="hover:text-white">Disclaimer</a></li>
+            <li><a href="/return" target="_blank" class="hover:text-white">Return Policy</a></li>
+            <li><a href="/privacy" target="_blank" class="hover:text-white">Privacy Policy</a></li>
+            <li><a href="/refund" target="_blank" class="hover:text-white">Refund Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Contact Us</h3>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fas fa-envelope mt-1 mr-3 text-blue-400"></i>
+              <span>teamisirp@gmail.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-phone mt-1 mr-3 text-blue-400"></i>
+              <span>+91 7039095763</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-map-marker-alt mt-1 mr-3 text-blue-400"></i>
+              <span>Mumbai ,Maharashtra, IN 550001</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
+        <p>&copy; 2025 ISIRP. All rights reserved.</p>
+        <p class="mt-2">Designed for innovation. Powered by AI.</p>
+      </div>
+    </div>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      mobileMenuButton.addEventListener('click', function () {
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function (event) {
+        const isClickInsideMenu = mobileMenu.contains(event.target);
+        const isClickOnButton = mobileMenuButton.contains(event.target);
+
+        if (!isClickInsideMenu && !isClickOnButton && !mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submission Agreement - ISIRP Research Journal</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="icon" type="image/png" href="/static/isirp-logo.png">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0f172a;
+      --accent: #8b5cf6;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      scroll-behavior: smooth;
+      background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+    }
+
+    .hero-bg {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/img1.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .card {
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .nav-link:after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: 0;
+      left: 0;
+      background-color: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover:after {
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+    }
+
+    .agreement-item {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .agreement-item:last-child {
+      border-bottom: none;
+    }
+
+    .example-box {
+      background-color: #f8fafc;
+      border-left: 4px solid #2563eb;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-style: italic;
+      color: #4a5568;
+    }
+
+    /* FIX FOR MOBILE MENU ALIGNMENT */
+    #mobile-menu {
+      text-align: center;
+    }
+
+    #mobile-menu .flex {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #mobile-menu a {
+      text-align: center;
+      width: 100%;
+      display: block;
+      padding: 12px 16px;
+    }
+
+    #mobile-menu .btn-primary {
+      display: inline-flex;
+      justify-content: center;
+      width: 80%;
+      margin: 8px auto;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">ISIRP
+        </div>
+        <div class="text-2xl font-bold text-blue-700">Research Journal</div>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex space-x-8 text-lg">
+        <a href="/" class="nav-link text-gray-700 hover:text-blue-600">Home</a>
+        <a href="/#about" class="nav-link text-gray-700 hover:text-blue-600">About</a>
+        <a href="/#features" class="nav-link text-gray-700 hover:text-blue-600">Features</a>
+        <a href="/#guidelines" class="nav-link text-gray-700 hover:text-blue-600">Guidelines</a>
+
+
+        <a href="/submit" class="btn-primary text-white px-5 py-2 rounded-full font-medium">Submit Paper</a>
+        <a href="dashboard.html" class="text-blue-600 font-semibold hover:underline flex items-center">
+          <i class="fas fa-sign-in-alt mr-2"></i> Login
+        </a>
+      </nav>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-button" class="md:hidden text-gray-600">
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white px-4 pt-2 pb-4 border-t">
+      <div class="flex flex-col space-y-3">
+        <a href="/" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Home</a>
+
+        <a href="/#about" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">About</a>
+        <a href="/#features" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Features</a>
+        <a href="/#guidelines" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Guidelines</a>
+
+
+        <a href="/submit" class="btn-primary text-white text-center py-2 px-4 rounded-full font-medium">Submit Paper</a>
+        <a href="dashboard.html"
+          class="text-blue-600 font-semibold text-center py-2 px-4 rounded hover:bg-blue-50">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Submission Agreement Section -->
+  <section class="py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold text-blue-800">Submission Agreement</h1>
+        <div class="w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        <p class="mt-6 text-gray-600">Terms and conditions for submitting your research work</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+        <div class="prose max-w-none">
+          <div class="agreement-item">
+            <h2 class="text-xl font-bold text-blue-700 mb-3">1. Author's Ownership & Rights</h2>
+            <p class="text-gray-700">
+              Author confirms they own the copyright to the work or have permission from the copyright holder.
+              Author confirms they have the right to submit the work for publication on your site.
+            </p>
+            <div class="example-box">
+              <p>I confirm that I am the sole author or have the necessary rights and permissions to submit this work,
+                and that its publication will not infringe upon any copyright, trademark, or proprietary rights.</p>
+            </div>
+          </div>
+
+          <div class="agreement-item">
+            <h2 class="text-xl font-bold text-blue-700 mb-3">2. Grant of License to ISIRP</h2>
+            <p class="text-gray-700">
+              Author allows ISIRP to host, display, and distribute the paper.
+              This is a non-exclusive license (author can publish elsewhere too).
+            </p>
+            <div class="example-box">
+              <p>I grant ISIRP Research Journal a non-exclusive, royalty-free license to publish, display, distribute,
+                and archive my work in any format for the purpose of open-access distribution.</p>
+            </div>
+          </div>
+
+          <div class="agreement-item">
+            <h2 class="text-xl font-bold text-blue-700 mb-3">3. Originality & Plagiarism</h2>
+            <p class="text-gray-700">
+              Author confirms the work is original and not plagiarized.
+              If plagiarism is found, we have the right to remove it.
+            </p>
+            <div class="example-box">
+              <p>I confirm that this work is original, and any sources used are properly cited. I understand that if
+                plagiarism is detected, the work will be removed without notice.</p>
+            </div>
+          </div>
+
+          <div class="agreement-item">
+            <h2 class="text-xl font-bold text-blue-700 mb-3">4. Content Responsibility</h2>
+            <p class="text-gray-700">
+              Author takes full legal responsibility for the content.
+              ISIRP is not liable for any claims arising from the work.
+            </p>
+            <div class="example-box">
+              <p>I accept full responsibility for the content, accuracy, and legality of the work. ISIRP Research
+                Journal shall not be held liable for any claims, damages, or disputes arising from its publication.</p>
+            </div>
+          </div>
+
+          <div class="agreement-item">
+            <h2 class="text-xl font-bold text-blue-700 mb-3">5. Review Process Acknowledgement</h2>
+            <p class="text-gray-700">
+              The paper is AI-reviewed, not peer-reviewed.
+            </p>
+            <div class="example-box">
+              <p>I understand that my work will be evaluated using AI-assisted review only, and that such review does
+                not replace traditional human peer review.</p>
+            </div>
+          </div>
+
+          <div class="agreement-item">
+            <h2 class="text-xl font-bold text-blue-700 mb-3">6. Right to Remove Content</h2>
+            <p class="text-gray-700">
+              We reserve the right to remove any paper that violates terms.
+            </p>
+            <div class="example-box">
+              <p>I acknowledge that ISIRP Research Journal reserves the right to remove my work at any time if it is
+                found to violate these terms or applicable laws.</p>
+            </div>
+          </div>
+
+          <div class="agreement-item">
+            <h2 class="text-xl font-bold text-blue-700 mb-3">7. Author Consent to Public Access</h2>
+            <p class="text-gray-700">
+              Papers will be freely available to read/download.
+            </p>
+            <div class="example-box">
+              <p>I consent to my work being made publicly available for free download and reading under ISIRP's
+                open-access policy.</p>
+            </div>
+          </div>
+
+          <div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div class="flex items-start">
+              <div class="flex-shrink-0 mt-1">
+                <i class="fas fa-info-circle text-blue-500 mr-3"></i>
+              </div>
+              <div>
+                <p class="text-blue-800">
+                  By submitting your work to ISIRP Research Journal, you acknowledge that you have read, understood, and
+                  agreed to all terms outlined in this Submission Agreement.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center text-white mb-6">
+            <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
+              ISIRP</div>
+            <div class="text-xl font-bold">Research Journal</div>
+          </div>
+          <p class="mb-4">
+            Revolutionizing academic publishing with advanced review and certification.
+          </p>
+
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Quick Links</h3>
+          <ul class="space-y-3">
+            <li><a href="/" class="hover:text-white">Home</a></li>
+            <li><a href="/#about" class="hover:text-white">About Us</a></li>
+            <li><a href="/#features" class="hover:text-white">Features</a></li>
+
+            <li><a href="/#guidelines" class="hover:text-white">Guidelines</a></li>
+            <li><a href="/submit" class="hover:text-white">Submit Paper</a></li>
+            <li><a href="/submissionagreement" target="_blank" class="hover:text-white">Submission Agreement</a></li>
+            <li><a href="/AIReviewprocess" target="_blank" class="hover:text-white">AI Review Process</a></li>
+            <li><a href="/AboutThisProject" target="_blank" class="hover:text-white">About This Project</a></li>
+
+
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Resources and Policies</h3>
+          <ul class="space-y-3">
+            <li><a href="/sample_paper" target="_blank" class="hover:text-white">Sample Papers</a></li>
+            <li><a href="Research-paper-template.doc" target="_blank" class="hover:text-white">Templates</a></li>
+
+            <li><a href="/faq" target="_blank" class="hover:text-white">FAQs</a></li>
+            <li><a href="/termsandconditions" target="_blank" class="hover:text-white">Terms and Conditions</a></li>
+            <li><a href="/disclaimer" target="_blank" class="hover:text-white">Disclaimer</a></li>
+            <li><a href="/return" target="_blank" class="hover:text-white">Return Policy</a></li>
+            <li><a href="/privacy" target="_blank" class="hover:text-white">Privacy Policy</a></li>
+            <li><a href="/refund" target="_blank" class="hover:text-white">Refund Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Contact Us</h3>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fas fa-envelope mt-1 mr-3 text-blue-400"></i>
+              <span>teamisirp@gmail.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-phone mt-1 mr-3 text-blue-400"></i>
+              <span>+91 7039095763</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-map-marker-alt mt-1 mr-3 text-blue-400"></i>
+              <span>Mumbai ,Maharashtra, IN 550001</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
+        <p>&copy; 2025 ISIRP. All rights reserved.</p>
+        <p class="mt-2">Designed for innovation. Powered by AI.</p>
+      </div>
+    </div>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      mobileMenuButton.addEventListener('click', function () {
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function (event) {
+        const isClickInsideMenu = mobileMenu.contains(event.target);
+        const isClickOnButton = mobileMenuButton.contains(event.target);
+
+        if (!isClickInsideMenu && !isClickOnButton && !mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

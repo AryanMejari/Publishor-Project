@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISIRP Research Journal Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="icon" type="image/png" href="/static/isirp-logo.png">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0f172a;
+      --accent: #8b5cf6;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      scroll-behavior: smooth;
+      background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+    }
+
+    .card {
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .nav-link:after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: 0;
+      left: 0;
+      background-color: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover:after {
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+    }
+
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .gradient-border {
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      position: relative;
+      background: white;
+    }
+
+    .gradient-border::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      border-radius: 8px;
+      z-index: -1;
+    }
+
+    .progress-container {
+      background-color: #e0f2fe;
+      border-radius: 12px;
+      height: 6px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 12px;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      transition: width 0.4s ease;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .status-pending {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+
+    .status-review {
+      background-color: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .status-approved {
+      background-color: #dcfce7;
+      color: #15803d;
+    }
+
+    .author-item {
+      background: #f0f9ff;
+      border-radius: 10px;
+      padding: 15px;
+      position: relative;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .sidebar {
+      width: 260px;
+      transition: all 0.3s ease;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .main-content {
+      transition: all 0.3s ease;
+      margin-left: 260px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-wrapper {
+      flex: 1;
+    }
+
+    .authors-certificates-section {
+      width: calc(100% - 2rem);
+      max-width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        height: 100vh;
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+      }
+
+      .overlay.active {
+        display: block;
+      }
+
+      .authors-certificates-section {
+        width: 100%;
+      }
+    }
+
+    /* Mobile menu alignment fix */
+    #mobile-menu {
+      text-align: center;
+    }
+
+    #mobile-menu .flex {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #mobile-menu a {
+      text-align: center;
+      width: 100%;
+      display: block;
+      padding: 12px 16px;
+    }
+
+    #mobile-menu .btn-primary {
+      display: inline-flex;
+      justify-content: center;
+      width: 80%;
+      margin: 8px auto;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Login Page -->
+  <section id="login-page" class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6">
+    <div class="max-w-md w-full space-y-8">
+      <div class="text-center">
+        <div class="flex justify-center mb-6">
+          <div class="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl">
+            ISIRP</div>
+        </div>
+        <h2 class="mt-6 text-3xl font-bold text-gray-900">Researcher Login</h2>
+        <p class="mt-2 text-gray-600">
+          Access your dashboard to track submissions and download certificates
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-8">
+        <form id="login-form" class="space-y-6">
+          <div>
+            <label for="paper-id" class="block text-gray-700 font-medium mb-2">Paper ID <span
+                class="text-red-500">*</span></label>
+            <input type="text" id="paper-id" placeholder="Enter your paper ID"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <div>
+            <label for="email" class="block text-gray-700 font-medium mb-2">Author Email <span
+                class="text-red-500">*</span></label>
+            <input type="email" id="email" placeholder="Enter your email address"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input id="remember-me" name="remember-me" type="checkbox"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+              <label for="remember-me" class="ml-2 block text-sm text-gray-700">Remember me</label>
+            </div>
+
+
+          </div>
+
+          <div>
+            <button type="submit" class="btn-primary w-full text-white py-3 px-4 rounded-lg font-medium text-lg">
+              Sign in <i class="fas fa-sign-in-alt ml-2"></i>
+            </button>
+          </div>
+
+          <div id="login-error" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-circle text-red-500"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-red-700">
+                  <strong>Error:</strong> The Paper ID and Email combination is incorrect. Please try again.
+                </p>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div class="mt-6 text-center">
+          <p class="text-gray-600">
+            Don't have a paper ID?
+            <a href="/submit" class="text-blue-600 font-medium hover:underline">Submit your paper</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Page (Initially Hidden) -->
+  <section id="dashboard-page" class="hidden min-h-screen">
+    <!-- Mobile Menu Overlay -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar bg-white shadow-lg">
+      <div class="p-6 border-b">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center">
+            <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
+              ISIRP</div>
+            <div class="text-xl font-bold text-blue-700">Dashboard</div>
+          </div>
+          <button id="close-sidebar" class="md:hidden text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center p-5 bg-blue-50 rounded-lg">
+          <div>
+            <div class="font-semibold text-gray-800 truncate w-40" id="sidebar-username">John Doe</div>
+            <div class="text-sm text-gray-600 truncate w-40" id="sidebar-email">john.doe@example.com</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="p-4">
+        <ul class="space-y-2">
+          <li>
+            <a href="/" class="flex items-center p-3 text-gray-600 hover:bg-blue-50 rounded-lg">
+              <i class="fas fa-home mr-3"></i> Home
+            </a>
+          </li>
+          <li>
+            <a href="/#about" class="flex items-center p-3 text-gray-600 hover:bg-blue-50 rounded-lg">
+              <i class="fas fa-info-circle mr-3"></i> About
+            </a>
+          </li>
+          <li>
+            <a href="/#features" class="flex items-center p-3 text-gray-600 hover:bg-blue-50 rounded-lg">
+              <i class="fas fa-cogs mr-3"></i> Features
+            </a>
+          </li>
+          <li>
+            <a href="/#guidelines" class="flex items-center p-3 text-gray-600 hover:bg-blue-50 rounded-lg">
+              <i class="fas fa-book mr-3"></i> Guidelines
+            </a>
+          </li>
+          <li>
+            <a href="/submit" class="flex items-center p-3 text-gray-600 hover:bg-blue-50 rounded-lg">
+              <i class="fas fa-upload mr-3"></i> Submit Paper
+            </a>
+          </li>
+          <li>
+            <a href="/community" class="flex items-center p-3 text-gray-600 hover:bg-blue-50 rounded-lg">
+              <i class="fas fa-users mr-3"></i> Research Community
+            </a>
+          </li>
+
+          <li>
+            <a href="#" id="logout-btn"
+              class="flex items-center p-3 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg">
+              <i class="fas fa-sign-out-alt mr-3"></i> Logout
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="p-4 border-t mt-auto">
+        <div class="text-xs text-gray-500">
+          <p>ISIRP Research Journal</p>
+          <p>Volume 13 | Issue 7 | July 2025</p>
+          <p class="mt-2">© 2025 All Rights Reserved</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Top Navigation -->
+      <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+          <div class="flex items-center">
+            <button id="menu-toggle" class="md:hidden text-gray-600 mr-4">
+              <i class="fas fa-bars text-xl"></i>
+            </button>
+            <div class="text-xl font-bold text-blue-700 hidden md:block">Research Dashboard</div>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center">
+              <div
+                class="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-1">
+                ISIRP</div>
+              <span class="hidden md:block text-gray-700 font-medium" id="topbar-username">John Doe</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <div class="content-wrapper">
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <!-- Welcome Card -->
+          <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl text-white p-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div>
+                <h1 class="text-2xl font-bold mb-2">Welcome back, <span id="welcome-username">John</span>!</h1>
+                <p class="opacity-90">Track your submissions and access certificates from your dashboard</p>
+              </div>
+              <div class="mt-4 md:mt-0">
+                <div class="bg-white text-blue-700 px-4 py-2 rounded-full font-bold inline-block">Paper ID: <span
+                    id="paper-id-display">ISIRP-2025-8476</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paper Status -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <h2 class="text-lg font-bold text-gray-800 mb-4">Paper Information</h2>
+              <div class="space-y-4" id="paper-info-container">
+                <div>
+                  <p class="text-sm text-gray-600">Paper Title</p>
+                  <p class="font-medium" id="paper-title">Advanced Neural Networks for Image Recognition</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Submission Date</p>
+                  <p class="font-medium submission-date">July 15, 2025</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Corresponding Author</p>
+                  <p class="font-medium" id="author-name">John Doe</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <h2 class="text-lg font-bold text-gray-800 mb-4">Journal Information</h2>
+              <div class="space-y-4">
+                <div>
+                  <p class="text-sm text-gray-600">Journal</p>
+                  <p class="font-medium">International Scientific and Innovative Research Publications</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Volume/Issue</p>
+                  <p class="font-medium">Volume 13 | Issue 7 | July 2025</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Ciatation Score</p>
+                  <p class="font-medium">8.97</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+              <div>
+                <h2 class="text-xl font-bold text-gray-800">Academic Screening</h2>
+                <p class="text-sm text-gray-600 mt-1">Automated structural and citation screening for your manuscript.</p>
+              </div>
+              <div class="flex gap-2">
+                <span id="review-status" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700">Not started</span>
+                <span id="review-ai-status" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700">AI not configured</span>
+              </div>
+            </div>
+            <div id="review-scores" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6"></div>
+            <ul id="review-findings" class="mt-5 space-y-2 text-sm text-gray-700"></ul>
+            <div class="grid md:grid-cols-2 gap-6 mt-6">
+              <div>
+                <h3 class="font-semibold text-gray-800">Counter-arguments to consider</h3>
+                <ul id="review-counter-arguments" class="mt-2 space-y-2 text-sm text-gray-700"></ul>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">Future directions</h3>
+                <ul id="review-future-directions" class="mt-2 space-y-2 text-sm text-gray-700"></ul>
+              </div>
+            </div>
+            <a id="review-report-link" class="hidden inline-block mt-5 text-blue-600 hover:underline" target="_blank">
+              <i class="fas fa-file-alt mr-1"></i> Download screening report
+            </a>
+            <a id="verification-link" class="hidden inline-block mt-5 ml-4 text-indigo-600 hover:underline" target="_blank">
+              <i class="fas fa-shield-alt mr-1"></i> Verify record
+            </a>
+            <p id="paper-hash" class="text-xs text-gray-500 mt-4 break-all"></p>
+            <p id="review-disclosure" class="text-xs text-gray-500 mt-4"></p>
+          </div>
+
+          <!-- Authors and Certificates -->
+          <div class="authors-certificates-section bg-white rounded-2xl shadow-md p-6 mb-8 mx-auto">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-800">Authors & Certificates</h2>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full" id="authors-table">
+                <thead>
+                  <tr class="bg-blue-50">
+                    <th class="py-3 px-4 text-left text-gray-600 font-medium">Author</th>
+                    <th class="py-3 px-4 text-left text-gray-600 font-medium">Certificate</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <!-- Will be populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-info-circle text-blue-500"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-blue-700">
+                    Digital certificates are generated after submission and will appear here when ready.
+                    You can download them from this table.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-400 py-12 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div class="flex items-center text-white mb-6">
+                <div
+                  class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
+                  ISIRP</div>
+                <div class="text-xl font-bold">Research Journal</div>
+              </div>
+              <p class="mb-4">
+                Revolutionizing academic publishing with advanced review and certification.
+              </p>
+
+            </div>
+
+            <div>
+              <h3 class="text-white text-lg font-semibold mb-6">Quick Links</h3>
+              <ul class="space-y-3">
+                <li><a href="/" class="hover:text-white">Home</a></li>
+                <li><a href="/#about" class="hover:text-white">About Us</a></li>
+                <li><a href="/#features" class="hover:text-white">Features</a></li>
+
+                <li><a href="/#guidelines" class="hover:text-white">Guidelines</a></li>
+                <li><a href="/submit" class="hover:text-white">Submit Paper</a></li>
+                <li><a href="/submissionagreement" target="_blank" class="hover:text-white">Submission Agreement</a>
+                </li>
+                <li><a href="/AIReviewprocess" target="_blank" class="hover:text-white">AI Review Process</a></li>
+                <li><a href="/AboutThisProject" target="_blank" class="hover:text-white">About This Project</a></li>
+
+
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="text-white text-lg font-semibold mb-6">Resources and Policies</h3>
+              <ul class="space-y-3">
+                <li><a href="/sample_paper" target="_blank" class="hover:text-white">Sample Papers</a></li>
+                <li><a href="Research-paper-template.doc" target="_blank" class="hover:text-white">Templates</a></li>
+
+                <li><a href="/faq" target="_blank" class="hover:text-white">FAQs</a></li>
+                <li><a href="/termsandconditions" target="_blank" class="hover:text-white">Terms and Conditions</a></li>
+                <li><a href="/disclaimer" target="_blank" class="hover:text-white">Disclaimer</a></li>
+                <li><a href="/return" target="_blank" class="hover:text-white">Return Policy</a></li>
+                <li><a href="/privacy" target="_blank" class="hover:text-white">Privacy Policy</a></li>
+                <li><a href="/refund" target="_blank" class="hover:text-white">Refund Policy</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="text-white text-lg font-semibold mb-6">Contact Us</h3>
+              <ul class="space-y-3">
+                <li class="flex items-start">
+                  <i class="fas fa-envelope mt-1 mr-3 text-blue-400"></i>
+                  <span>teamisirp@gmail.com</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-phone mt-1 mr-3 text-blue-400"></i>
+                  <span>+91 7039095763</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-map-marker-alt mt-1 mr-3 text-blue-400"></i>
+                  <span>Mumbai ,Maharashtra, IN 550001</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
+            <p>&copy; 2025 ISIRP. All rights reserved.</p>
+            <p class="mt-2">Designed for innovation. Powered by AI.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </section>
+
+  <script>
+
+    // Mobile menu toggle functionality
+    document.addEventListener('DOMContentLoaded', function () {
+      // Mobile menu toggle for regular pages
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      if (mobileMenuButton && mobileMenu) {
+        mobileMenuButton.addEventListener('click', function () {
+          mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function (event) {
+          const isClickInsideMenu = mobileMenu.contains(event.target);
+          const isClickOnButton = mobileMenuButton.contains(event.target);
+
+          if (!isClickInsideMenu && !isClickOnButton && !mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+          }
+        });
+      }
+
+      // Dashboard sidebar toggle functionality
+      const menuToggle = document.getElementById('menu-toggle');
+      const closeSidebar = document.getElementById('close-sidebar');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+
+      if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function () {
+          sidebar.classList.add('active');
+          overlay.classList.add('active');
+        });
+      }
+
+      if (closeSidebar && sidebar && overlay) {
+        closeSidebar.addEventListener('click', function () {
+          sidebar.classList.remove('active');
+          overlay.classList.remove('active');
+        });
+      }
+
+      if (overlay && sidebar) {
+        overlay.addEventListener('click', function () {
+          sidebar.classList.remove('active');
+          overlay.classList.remove('active');
+        });
+      }
+    });
+
+    // Function to handle login
+    async function handleLogin(event) {
+      event.preventDefault();
+
+      const paperId = document.getElementById('paper-id').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      // Hide any previous error
+      document.getElementById('login-error').classList.add('hidden');
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            paper_id: paperId,
+            email: email
+          })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          // Store credentials in session storage
+          sessionStorage.setItem('paper_id', paperId);
+          sessionStorage.setItem('email', email);
+
+          // Hide login page, show dashboard
+          document.getElementById('login-page').classList.add('hidden');
+          document.getElementById('dashboard-page').classList.remove('hidden');
+
+          // Load dashboard data
+          loadDashboardData();
+        } else {
+          // Show error
+          document.getElementById('login-error').classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Login failed:', error);
+        document.getElementById('login-error').classList.remove('hidden');
+      }
+    }
+
+    // Function to load dashboard data
+    async function loadDashboardData() {
+      const paperId = sessionStorage.getItem('paper_id');
+      const email = sessionStorage.getItem('email');
+
+      try {
+        const response = await fetch('/api/dashboard-data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            paper_id: paperId,
+            email: email
+          })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          const paper = result.paper;
+          updateReviewPanel(paper);
+
+          // Update user information
+          document.getElementById('sidebar-username').textContent = paper.corresponding_author_name;
+          document.getElementById('sidebar-email').textContent = paper.corresponding_author_email;
+          document.getElementById('topbar-username').textContent = paper.corresponding_author_name;
+          document.getElementById('welcome-username').textContent = paper.corresponding_author_name.split(' ')[0]; // First name
+          document.getElementById('paper-id-display').textContent = paper.paper_id;
+          document.getElementById('paper-title').textContent = paper.paper_title;
+          document.getElementById('author-name').textContent = paper.corresponding_author_name;
+
+          // Format the submission date
+          const submissionDate = new Date(paper.submission_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          document.querySelector('#paper-info-container .submission-date').textContent = submissionDate;
+
+          // Update authors in the table
+          const authorsTableBody = document.querySelector('#authors-table tbody');
+          authorsTableBody.innerHTML = '';
+
+          // Add corresponding author
+          addAuthorToTable(authorsTableBody, paper.corresponding_author_name, 'Corresponding Author', paper.corresponding_author_certificate);
+
+          // Add additional authors
+          const additionalAuthors = [
+            paper.additional_author_name_1,
+            paper.additional_author_name_2,
+            paper.additional_author_name_3,
+            paper.additional_author_name_4,
+            paper.additional_author_name_5
+          ];
+
+          const additionalCertificates = [
+            paper.additional_author_cert_1,
+            paper.additional_author_cert_2,
+            paper.additional_author_cert_3,
+            paper.additional_author_cert_4,
+            paper.additional_author_cert_5
+          ];
+
+          additionalAuthors.forEach((name, index) => {
+            if (name) {
+              addAuthorToTable(authorsTableBody, name, '', additionalCertificates[index]);
+            }
+          });
+        } else {
+          console.error('Failed to load dashboard data');
+        }
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+
+    function updateReviewPanel(paper) {
+      const status = paper.review_status || 'not_started';
+      const statusElement = document.getElementById('review-status');
+      statusElement.textContent = status.replace('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase());
+      statusElement.className = `px-3 py-1 rounded-full text-sm font-medium ${
+        status === 'completed' ? 'bg-green-100 text-green-700' :
+        status === 'failed' ? 'bg-red-100 text-red-700' :
+        'bg-blue-100 text-blue-700'
+      }`;
+      const aiStatus = paper.review_ai_status || 'not_configured';
+      const aiStatusElement = document.getElementById('review-ai-status');
+      aiStatusElement.textContent = aiStatus === 'completed' ? 'Gemini review complete' :
+        aiStatus === 'failed' ? 'Gemini unavailable' : 'AI fallback active';
+      aiStatusElement.className = `px-3 py-1 rounded-full text-sm font-medium ${
+        aiStatus === 'completed' ? 'bg-purple-100 text-purple-700' :
+        aiStatus === 'failed' ? 'bg-amber-100 text-amber-700' :
+        'bg-gray-100 text-gray-700'
+      }`;
+
+      const scores = paper.review_scores || {};
+      document.getElementById('review-scores').innerHTML = Object.entries(scores).map(([name, value]) => `
+        <div class="bg-slate-50 rounded-lg p-3">
+          <div class="text-xs text-gray-500">${name.replaceAll('_', ' ')}</div>
+          <div class="text-xl font-bold text-indigo-700">${value}/100</div>
+        </div>
+      `).join('');
+
+      document.getElementById('review-findings').innerHTML = (paper.review_findings || []).map(finding => `
+        <li><i class="fas fa-circle-exclamation text-amber-500 mr-2"></i>${finding}</li>
+      `).join('');
+      document.getElementById('review-counter-arguments').innerHTML = (paper.review_counter_arguments || []).map(item => `
+        <li><i class="fas fa-angle-right text-indigo-500 mr-2"></i>${item}</li>
+      `).join('');
+      document.getElementById('review-future-directions').innerHTML = (paper.review_future_directions || []).map(item => `
+        <li><i class="fas fa-lightbulb text-amber-500 mr-2"></i>${item}</li>
+      `).join('');
+      document.getElementById('review-disclosure').textContent = paper.review_disclosure || '';
+      document.getElementById('paper-hash').textContent = paper.paper_sha256 ? `Paper SHA-256: ${paper.paper_sha256}` : '';
+
+      const reportLink = document.getElementById('review-report-link');
+      if (paper.review_status === 'completed') {
+        reportLink.href = `/download-review-report?paper_id=${encodeURIComponent(paper.paper_id)}&email=${encodeURIComponent(paper.corresponding_author_email)}`;
+        reportLink.classList.remove('hidden');
+      }
+      const verificationLink = document.getElementById('verification-link');
+      verificationLink.href = `/verify/${encodeURIComponent(paper.paper_id)}`;
+      verificationLink.classList.remove('hidden');
+    }
+
+    function addAuthorToTable(tableBody, name, role, certificatePath) {
+      const row = document.createElement('tr');
+
+      // Generate initials for avatar
+      const initials = name.split(' ').map(part => part[0]).join('').toUpperCase().substring(0, 2);
+
+      row.innerHTML = `
+        <td class="py-4 px-4">
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold mr-3">${initials}</div>
+            <div>
+              <div class="font-medium">${name}</div>
+              ${role ? `<div class="text-sm text-gray-500">${role}</div>` : ''}
+            </div>
+          </div>
+        </td>
+        <td class="py-4 px-4">
+          ${certificatePath ?
+          `<a href="/download-certificate?path=${encodeURIComponent(certificatePath)}" class="text-blue-600 hover:underline">
+              <i class="fas fa-download"></i> Download
+            </a>` :
+          `<span class="text-gray-400">Available after review</span>`
+        }
+        </td>
+      `;
+
+      tableBody.appendChild(row);
+    }
+
+    // Function to handle logout
+    function handleLogout() {
+      sessionStorage.removeItem('paper_id');
+      sessionStorage.removeItem('email');
+      document.getElementById('dashboard-page').classList.add('hidden');
+      document.getElementById('login-page').classList.remove('hidden');
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+      // Login form submission
+      document.getElementById('login-form').addEventListener('submit', handleLogin);
+
+      // Logout button
+      document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+      // If already logged in, show dashboard
+      const paperId = sessionStorage.getItem('paper_id');
+      const email = sessionStorage.getItem('email');
+
+      if (paperId && email) {
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('dashboard-page').classList.remove('hidden');
+        loadDashboardData();
+      }
+    });
+  </script>
+</body>
+
+</html>

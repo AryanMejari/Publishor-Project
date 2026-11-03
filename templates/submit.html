@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit Research Paper - AI Research Journal</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="icon" type="image/png" href="/static/isirp-logo.png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0f172a;
+      --accent: #8b5cf6;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      scroll-behavior: smooth;
+      background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+    }
+
+    .card {
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .nav-link:after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: 0;
+      left: 0;
+      background-color: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover:after {
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+    }
+
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .gradient-border {
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      position: relative;
+      background: white;
+    }
+
+    .gradient-border::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      border-radius: 8px;
+      z-index: -1;
+    }
+
+    .progress-container {
+      background-color: #e0f2fe;
+      border-radius: 12px;
+      height: 6px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 12px;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      transition: width 0.4s ease;
+    }
+
+    .author-item {
+      background: #f0f9ff;
+      border-radius: 10px;
+      padding: 15px;
+      position: relative;
+    }
+
+    .remove-author {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #ef4444;
+      cursor: pointer;
+    }
+
+    .file-upload-box {
+      border: 2px dashed #93c5fd;
+      border-radius: 12px;
+      transition: all 0.3s;
+    }
+
+    .file-upload-box:hover,
+    .file-upload-box.dragover {
+      background-color: #dbeafe;
+      border-color: var(--primary);
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .error-field {
+      border-color: #ef4444 !important;
+    }
+
+    /* FIX FOR MOBILE MENU ALIGNMENT */
+    #mobile-menu {
+      text-align: center;
+    }
+
+    #mobile-menu .flex {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #mobile-menu a {
+      text-align: center;
+      width: 100%;
+      display: block;
+      padding: 12px 16px;
+    }
+
+    #mobile-menu .btn-primary {
+      display: inline-flex;
+      justify-content: center;
+      width: 80%;
+      margin: 8px auto;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">ISIRP
+        </div>
+        <div class="text-2xl font-bold text-blue-700">Research Journal</div>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex space-x-8 text-lg">
+        <a href="/" class="nav-link text-gray-700 hover:text-blue-600">Home</a>
+        <a href="/#about" class="nav-link text-gray-700 hover:text-blue-600">About</a>
+        <a href="/#features" class="nav-link text-gray-700 hover:text-blue-600">Features</a>
+        <a href="/#guidelines" class="nav-link text-gray-700 hover:text-blue-600">Guidelines</a>
+
+
+        <a href="/submit" class="btn-primary text-white px-5 py-2 rounded-full font-medium">Submit Paper</a>
+        <a href="/dashboard" class="text-blue-600 font-semibold hover:underline flex items-center">
+          <i class="fas fa-sign-in-alt mr-2"></i> Login
+        </a>
+      </nav>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-button" class="md:hidden text-gray-600">
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white px-4 pt-2 pb-4 border-t">
+      <div class="flex flex-col space-y-3">
+        <a href="/" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Home</a>
+
+        <a href="/#about" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">About</a>
+        <a href="/#features" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Features</a>
+        <a href="/#guidelines" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Guidelines</a>
+
+
+        <a href="/submit" class="btn-primary text-white text-center py-2 px-4 rounded-full font-medium">Submit Paper</a>
+        <a href="/dashboard"
+          class="text-blue-600 font-semibold text-center py-2 px-4 rounded hover:bg-blue-50">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Submission Progress -->
+  <section class="bg-white py-6 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="flex justify-between items-center mb-4">
+        <div class="text-lg font-semibold text-blue-700">Paper Submission Progress</div>
+        <div class="text-sm text-gray-600">Step <span id="current-step">1</span> of 4</div>
+      </div>
+      <div class="progress-container">
+        <div id="progress-bar" class="progress-bar" style="width: 25%;"></div>
+      </div>
+      <div class="grid grid-cols-4 gap-2 mt-4 text-center text-sm text-gray-600">
+        <div class="font-medium text-blue-600">Paper Details</div>
+        <div>Authors</div>
+        <div>Files</div>
+        <div>Payment</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Submission Form -->
+  <section class="py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold text-blue-800">Submit Your Research Paper</h1>
+        <div class="w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        <p class="mt-6 text-gray-600 max-w-2xl mx-auto">
+          Complete the form below to submit your research for publication in our journal
+        </p>
+      </div>
+
+      <!-- Form Container -->
+      <div id="form-container" class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+        <!-- Step 1: Paper Details -->
+        <div id="step1" class="form-step">
+          <h2 class="text-2xl font-bold text-blue-700 mb-6">Paper Information</h2>
+
+          <div class="space-y-6">
+            <div>
+              <label for="paper-title" class="block text-gray-700 font-medium mb-2">Paper Title <span
+                  class="text-red-500">*</span></label>
+              <input type="text" id="paper-title" placeholder="Enter your paper title"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <div id="paper-title-error" class="error-message hidden">Paper title is required</div>
+            </div>
+
+            <div>
+              <label for="abstract" class="block text-gray-700 font-medium mb-2">Abstract <span
+                  class="text-red-500">*</span></label>
+              <textarea id="abstract" rows="5" placeholder="Provide a brief summary of your research"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              <div id="abstract-error" class="error-message hidden">Abstract is required</div>
+              <p class="text-sm text-gray-500 mt-1">Maximum 300 words</p>
+            </div>
+
+            <div>
+              <label for="keywords" class="block text-gray-700 font-medium mb-2">Keywords <span
+                  class="text-red-500">*</span></label>
+              <input type="text" id="keywords" placeholder="Enter 3-6 keywords separated by commas"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <div id="keywords-error" class="error-message hidden">Keywords are required</div>
+              <p class="text-sm text-gray-500 mt-1">Example: artificial intelligence, machine learning, neural networks
+              </p>
+            </div>
+
+            <div>
+              <label for="category" class="block text-gray-700 font-medium mb-2">Research Category <span
+                  class="text-red-500">*</span></label>
+              <select id="category"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select a category</option>
+                <optgroup label="AI & Data Technologies">
+                  <option value="ai">Artificial Intelligence</option>
+                  <option value="ml">Machine Learning</option>
+                  <option value="dl">Deep Learning</option>
+                  <option value="nlp">Natural Language Processing</option>
+                  <option value="cv">Computer Vision</option>
+                  <option value="robotics">Robotics</option>
+                  <option value="datascience">Data Science</option>
+                  <option value="bigdata">Big Data</option>
+                  <option value="analytics">Data Analytics</option>
+                  <option value="aiethics">AI Ethics</option>
+                  <option value="reinforcement">Reinforcement Learning</option>
+                  <option value="generative">Generative AI</option>
+                  <option value="chatbots">Chatbots & Virtual Assistants</option>
+                  <option value="speech">Speech Recognition</option>
+                  <option value="recommendation">Recommendation Systems</option>
+                  <option value="edgeai">Edge AI</option>
+                  <option value="iot">Internet of Things (IoT)</option>
+                  <option value="automation">Automation & RPA</option>
+                  <option value="cybersecurity">AI in Cybersecurity</option>
+                  <option value="quantum">Quantum Machine Learning</option>
+                </optgroup>
+                <optgroup label="Electronics & Communication">
+                  <option value="vlsi">VLSI Design</option>
+                  <option value="embedded">Embedded Systems</option>
+                  <option value="signal">Digital Signal Processing</option>
+                  <option value="communication">Wireless Communication</option>
+                  <option value="microwave">Microwave Engineering</option>
+                  <option value="iot-electronics">IoT in Electronics</option>
+                  <option value="sensor">Sensor Networks</option>
+                  <option value="pcb">PCB Design</option>
+                </optgroup>
+                <optgroup label="Mechanical Engineering">
+                  <option value="cadcam">CAD/CAM</option>
+                  <option value="mechatronics">Mechatronics</option>
+                  <option value="thermodynamics">Thermodynamics</option>
+                  <option value="automobile">Automobile Engineering</option>
+                  <option value="fluid">Fluid Mechanics</option>
+                  <option value="manufacturing">Manufacturing Technology</option>
+                  <option value="3dprinting">3D Printing</option>
+                  <option value="hvac">HVAC Systems</option>
+                </optgroup>
+                <optgroup label="Civil Engineering">
+                  <option value="structural">Structural Engineering</option>
+                  <option value="transportation">Transportation Engineering</option>
+                  <option value="geotechnical">Geotechnical Engineering</option>
+                  <option value="construction">Construction Management</option>
+                  <option value="surveying">Land Surveying</option>
+                  <option value="environmental">Environmental Engineering</option>
+                  <option value="hydraulic">Hydraulic Engineering</option>
+                  <option value="bim">Building Information Modeling (BIM)</option>
+                </optgroup>
+                <option value="other">Other</option>
+              </select>
+              <div id="category-error" class="error-message hidden">Research category is required</div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Funding Information</label>
+              <div class="space-y-3">
+                <div class="flex items-center">
+                  <input type="radio" id="funding-yes" name="funding" value="yes"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                  <label for="funding-yes" class="ml-3 text-gray-700">This research received funding</label>
+                </div>
+                <div class="flex items-center">
+                  <input type="radio" id="funding-no" name="funding" value="no"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500" checked>
+                  <label for="funding-no" class="ml-3 text-gray-700">No funding received</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-10 flex justify-between">
+            <div></div> <!-- Empty div for spacing -->
+            <button onclick="validateStep1()" class="btn-primary text-white px-8 py-3 text-lg rounded-full font-medium">
+              Next: Authors <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Authors -->
+        <div id="step2" class="form-step hidden">
+          <h2 class="text-2xl font-bold text-blue-700 mb-6">Author Information</h2>
+
+          <div id="author-list" class="space-y-6 mb-8">
+            <!-- Corresponding Author -->
+            <div class="author-item border-l-4 border-blue-500">
+              <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-blue-700">Corresponding Author</h3>
+                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs">Main Contact</span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-gray-600 text-sm mb-1">Full Name. <span class="text-red-500">*</span></label>
+                  <input type="text" id="corresponding-author-name" placeholder="First and Last name"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <div id="corresponding-author-name-error" class="error-message hidden">Author name is required</div>
+                </div>
+                <div>
+                  <label class="block text-gray-600 text-sm mb-1">Email <span class="text-red-500">*</span></label>
+                  <input type="email" id="corresponding-author-email" placeholder="contact@example.com"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <div id="corresponding-author-email-error" class="error-message hidden">Valid email is required</div>
+                </div>
+                <div>
+                  <label class="block text-gray-600 text-sm mb-1">Affiliation <span
+                      class="text-red-500">*</span></label>
+                  <input type="text" id="corresponding-author-affiliation" placeholder="University/Organization"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <div id="corresponding-author-affiliation-error" class="error-message hidden">Affiliation is required
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-gray-600 text-sm mb-1">
+                    Country <span class="text-red-500">*</span>
+                  </label>
+                  <select id="corresponding-author-country"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select country</option>
+                  </select>
+
+                  <script>
+                    const countries = [
+                      "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia",
+                      "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados",
+                      "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina",
+                      "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia",
+                      "Cameroon", "Canada", "Chile", "China", "Colombia", "Congo", "Costa Rica", "Croatia",
+                      "Cuba", "Cyprus", "Czech Republic", "Denmark", "Dominican Republic", "Ecuador", "Egypt",
+                      "El Salvador", "Estonia", "Ethiopia", "Fiji", "Finland", "France", "Germany", "Ghana",
+                      "Greece", "Guatemala", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran",
+                      "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kenya", "Kuwait",
+                      "Latvia", "Lebanon", "Lithuania", "Luxembourg", "Malaysia", "Maldives", "Mexico",
+                      "Monaco", "Mongolia", "Morocco", "Nepal", "Netherlands", "New Zealand", "Nigeria",
+                      "North Korea", "Norway", "Oman", "Pakistan", "Panama", "Peru", "Philippines", "Poland",
+                      "Portugal", "Qatar", "Romania", "Russia", "Saudi Arabia", "Serbia", "Singapore",
+                      "Slovakia", "Slovenia", "South Africa", "South Korea", "Spain", "Sri Lanka", "Sudan",
+                      "Sweden", "Switzerland", "Syria", "Taiwan", "Tanzania", "Thailand", "Turkey", "Uganda",
+                      "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay",
+                      "Uzbekistan", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
+                    ];
+
+                    const select = document.getElementById("corresponding-author-country");
+                    countries.forEach(c => {
+                      const opt = document.createElement("option");
+                      opt.value = c.toLowerCase().replace(/ /g, "-");
+                      opt.textContent = c;
+                      select.appendChild(opt);
+                    });
+                  </script>
+
+                  <div id="corresponding-author-country-error" class="error-message hidden">Country is required</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button id="add-author" class="flex items-center text-blue-600 font-medium mb-8">
+            <i class="fas fa-plus-circle mr-2"></i> Add Another Author
+          </button>
+          <div id="max-authors-message" class="text-red-500 mb-4 hidden">Maximum 5 additional authors allowed</div>
+
+          <div class="mt-6 flex justify-between">
+            <button onclick="prevStep(1)" class="bg-gray-200 text-gray-700 px-6 py-3 text-lg rounded-full font-medium">
+              <i class="fas fa-arrow-left mr-2"></i> Back
+            </button>
+            <button onclick="validateStep2()" class="btn-primary text-white px-8 py-3 text-lg rounded-full font-medium">
+              Next: Upload Files <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Files -->
+        <div id="step3" class="form-step hidden">
+          <h2 class="text-2xl font-bold text-blue-700 mb-6">Upload Documents</h2>
+
+          <div class="space-y-8">
+            <!-- Manuscript -->
+            <div class="file-upload-box p-8 text-center cursor-pointer">
+              <div class="flex justify-center text-blue-500 mb-4">
+                <i class="fas fa-file-word text-5xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-blue-700 mb-2">Upload Manuscript<span class="text-red-500">*</span></h3>
+              <p class="text-gray-600 mb-4">DOCX or PDF format (Max 10MB)</p>
+              <input type="file" id="manuscript" class="hidden" accept=".docx,.pdf">
+              <button type="button" onclick="document.getElementById('manuscript').click()"
+                class="bg-blue-100 text-blue-700 px-6 py-2 rounded-full font-medium">
+                Select File
+              </button>
+              <p id="manuscript-name" class="text-sm text-gray-500 mt-3"></p>
+              <!-- Add error messages -->
+              <div id="manuscript-error" class="error-message hidden">Manuscript file is required</div>
+              <div id="manuscript-type-error" class="error-message hidden">Only DOCX and PDF files are allowed</div>
+              <div id="manuscript-size-error" class="error-message hidden">File size must be less than 10MB</div>
+              <p class="text-xs text-gray-500 mt-4">Required: Title page, abstract, keywords, main text, references</p>
+            </div>
+
+            <!-- Cover Letter -->
+            <div class="file-upload-box p-8 text-center cursor-pointer">
+              <div class="flex justify-center text-indigo-500 mb-4">
+                <i class="fas fa-envelope-open-text text-5xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-blue-700 mb-2">Cover Letter (Optional)</h3>
+              <p class="text-gray-600 mb-4">PDF format (Max 5MB)</p>
+              <input type="file" id="cover-letter" class="hidden" accept=".pdf">
+              <button type="button" onclick="document.getElementById('cover-letter').click()"
+                class="bg-blue-100 text-blue-700 px-6 py-2 rounded-full font-medium">
+                Select File
+              </button>
+              <p id="cover-letter-name" class="text-sm text-gray-500 mt-3"></p>
+            </div>
+
+            <!-- Supplementary Materials -->
+            <div class="file-upload-box p-8 text-center cursor-pointer">
+              <div class="flex justify-center text-purple-500 mb-4">
+                <i class="fas fa-file-archive text-5xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-blue-700 mb-2">Supplementary Materials (Optional)</h3>
+              <p class="text-gray-600 mb-4">ZIP, PDF, or DOCX format (Max 20MB)</p>
+              <input type="file" id="supplementary" class="hidden" accept=".zip,.pdf,.docx">
+              <button type="button" onclick="document.getElementById('supplementary').click()"
+                class="bg-blue-100 text-blue-700 px-6 py-2 rounded-full font-medium">
+                Select File
+              </button>
+              <p id="supplementary-name" class="text-sm text-gray-500 mt-3"></p>
+            </div>
+          </div>
+
+          <div class="mt-10 flex justify-between">
+            <button onclick="prevStep(2)" class="bg-gray-200 text-gray-700 px-6 py-3 text-lg rounded-full font-medium">
+              <i class="fas fa-arrow-left mr-2"></i> Back
+            </button>
+            <button onclick="validateStep3()" class="btn-primary text-white px-8 py-3 text-lg rounded-full font-medium">
+              Next: Submit <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Submission confirmation -->
+        <div id="step4" class="form-step hidden">
+          <h2 class="text-2xl font-bold text-blue-700 mb-6">Confirm Submission</h2>
+
+          <div class="mb-8">
+            <div class="flex items-start">
+              <input type="checkbox" id="agreement" class="mt-1 h-5 w-5 text-blue-600">
+              <label for="agreement" class="ml-3 text-gray-700">
+                I confirm that this manuscript has not been published elsewhere and is not currently under consideration
+                by another journal. I agree to the <a href="/termsandconditions" target="_blank"
+                  class="text-blue-600 hover:underline">terms and conditions</a> and <a href="/privacy" target="_blank"
+                  class="text-blue-600 hover:underline">privacy policy</a> and <a href="/submissionagreement"
+                  target="_blank" class="text-blue-600 hover:underline">submission agreement</a>.
+              </label>
+            </div>
+            <div id="agreement-error" class="error-message hidden">You must agree to the terms and conditions</div>
+          </div>
+
+          <div class="flex justify-between">
+            <button onclick="prevStep(3)" class="bg-gray-200 text-gray-700 px-6 py-3 text-lg rounded-full font-medium">
+              <i class="fas fa-arrow-left mr-2"></i> Back
+            </button>
+            <button id="submit-paper" class="btn-primary text-white px-8 py-3 text-lg rounded-full font-medium">
+              Submit Paper <i class="fas fa-paper-plane ml-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="success-message" class="text-center py-16 hidden">
+          <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-check-circle text-green-500 text-4xl"></i>
+          </div>
+          <h2 class="text-3xl font-bold text-green-600 mb-4">Submission Successful!</h2>
+          <p class="text-gray-600 max-w-xl mx-auto mb-8">
+            Thank you for submitting your research paper. Our review system is processing your submission.
+            You will receive a confirmation email with your submission details shortly.
+          </p>
+          <div class="bg-blue-50 rounded-xl p-6 max-w-md mx-auto mb-8">
+            <div class="font-medium text-gray-800 mb-2">Submission ID: <span id="generated-paper-id"
+                class="font-bold"></span></div>
+            <div class="text-sm text-gray-600">Keep this ID for future reference</div>
+          </div>
+          <div class="flex justify-center gap-4">
+            <a href="/" class="btn-primary text-white px-8 py-3 rounded-full font-medium">
+              Back to Home
+            </a>
+            <a href="/dashboard"
+              class="bg-white text-blue-600 px-8 py-3 rounded-full font-medium border-2 border-blue-200 hover:bg-blue-50">
+              Go to Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center text-white mb-6">
+            <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
+              ISIRP</div>
+            <div class="text-xl font-bold">Research Journal</div>
+          </div>
+          <p class="mb-4">
+            Revolutionizing academic publishing with advanced review and certification.
+          </p>
+
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Quick Links</h3>
+          <ul class="space-y-3">
+            <li><a href="/" class="hover:text-white">Home</a></li>
+            <li><a href="/#about" class="hover:text-white">About Us</a></li>
+            <li><a href="/#features" class="hover:text-white">Features</a></li>
+
+            <li><a href="/#guidelines" class="hover:text-white">Guidelines</a></li>
+            <li><a href="/submit" class="hover:text-white">Submit Paper</a></li>
+            <li><a href="/submissionagreement" target="_blank" class="hover:text-white">Submission Agreement</a></li>
+            <li><a href="/AIReviewprocess" target="_blank" class="hover:text-white">AI Review Process</a></li>
+            <li><a href="/AboutThisProject" target="_blank" class="hover:text-white">About This Project</a></li>
+
+
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Resources and Policies</h3>
+          <ul class="space-y-3">
+            <li><a href="/sample_paper" target="_blank" class="hover:text-white">Sample Papers</a></li>
+            <li><a href="Research-paper-template.doc" target="_blank" class="hover:text-white">Templates</a></li>
+
+            <li><a href="/faq" target="_blank" class="hover:text-white">FAQs</a></li>
+            <li><a href="/termsandconditions" target="_blank" class="hover:text-white">Terms and Conditions</a></li>
+            <li><a href="/disclaimer" target="_blank" class="hover:text-white">Disclaimer</a></li>
+            <li><a href="/return" target="_blank" class="hover:text-white">Return Policy</a></li>
+            <li><a href="/privacy" target="_blank" class="hover:text-white">Privacy Policy</a></li>
+            <li><a href="/refund" target="_blank" class="hover:text-white">Refund Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white text-lg font-semibold mb-6">Contact Us</h3>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fas fa-envelope mt-1 mr-3 text-blue-400"></i>
+              <span>teamisirp@gmail.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-phone mt-1 mr-3 text-blue-400"></i>
+              <span>+91 7039095763</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-map-marker-alt mt-1 mr-3 text-blue-400"></i>
+              <span>Mumbai ,Maharashtra, IN 550001</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
+        <p>&copy; 2025 ISIRP. All rights reserved.</p>
+        <p class="mt-2">Designed for innovation. Powered by AI.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    mobileMenuButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Form navigation
+    function nextStep(step) {
+      document.querySelectorAll('.form-step').forEach(el => {
+        el.classList.add('hidden');
+      });
+      document.getElementById(`step${step}`).classList.remove('hidden');
+
+      // Update progress bar
+      const progress = (step / 4) * 100;
+      document.getElementById('progress-bar').style.width = `${progress}%`;
+      document.getElementById('current-step').textContent = step;
+    }
+
+    function prevStep(step) {
+      document.querySelectorAll('.form-step').forEach(el => {
+        el.classList.add('hidden');
+      });
+      document.getElementById(`step${step}`).classList.remove('hidden');
+
+      // Update progress bar
+      const progress = (step / 4) * 100;
+      document.getElementById('progress-bar').style.width = `${progress}%`;
+      document.getElementById('current-step').textContent = step;
+    }
+
+    // Step 1 Validation
+    function validateStep1() {
+      let isValid = true;
+
+      // Reset errors
+      document.querySelectorAll('#step1 .error-message').forEach(el => {
+        el.classList.add('hidden');
+      });
+      document.querySelectorAll('#step1 input, #step1 textarea, #step1 select').forEach(el => {
+        el.classList.remove('error-field');
+      });
+
+      // Validate paper title
+      const paperTitle = document.getElementById('paper-title').value.trim();
+      if (!paperTitle) {
+        document.getElementById('paper-title-error').classList.remove('hidden');
+        document.getElementById('paper-title').classList.add('error-field');
+        isValid = false;
+      }
+
+      // Validate abstract
+      const abstract = document.getElementById('abstract').value.trim();
+      if (!abstract) {
+        document.getElementById('abstract-error').classList.remove('hidden');
+        document.getElementById('abstract').classList.add('error-field');
+        isValid = false;
+      }
+
+      // Validate keywords
+      const keywords = document.getElementById('keywords').value.trim();
+      if (!keywords) {
+        document.getElementById('keywords-error').classList.remove('hidden');
+        document.getElementById('keywords').classList.add('error-field');
+        isValid = false;
+      }
+
+      // Validate category
+      const category = document.getElementById('category').value;
+      if (!category) {
+        document.getElementById('category-error').classList.remove('hidden');
+        document.getElementById('category').classList.add('error-field');
+        isValid = false;
+      }
+
+      if (isValid) {
+        nextStep(2);
+      }
+    }
+
+    // Step 2 Validation
+    function validateStep2() {
+      let isValid = true;
+
+      // Reset errors
+      document.querySelectorAll('#step2 .error-message').forEach(el => {
+        el.classList.add('hidden');
+      });
+      document.querySelectorAll('#step2 input, #step2 select').forEach(el => {
+        el.classList.remove('error-field');
+      });
+
+      // Validate corresponding author name
+      const correspondingAuthorName = document.getElementById('corresponding-author-name').value.trim();
+      if (!correspondingAuthorName) {
+        document.getElementById('corresponding-author-name-error').classList.remove('hidden');
+        document.getElementById('corresponding-author-name').classList.add('error-field');
+        isValid = false;
+      }
+
+      // Validate corresponding author email
+      const correspondingAuthorEmail = document.getElementById('corresponding-author-email').value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!correspondingAuthorEmail || !emailRegex.test(correspondingAuthorEmail)) {
+        document.getElementById('corresponding-author-email-error').classList.remove('hidden');
+        document.getElementById('corresponding-author-email').classList.add('error-field');
+        isValid = false;
+      }
+
+      // Validate corresponding author affiliation
+      const correspondingAuthorAffiliation = document.getElementById('corresponding-author-affiliation').value.trim();
+      if (!correspondingAuthorAffiliation) {
+        document.getElementById('corresponding-author-affiliation-error').classList.remove('hidden');
+        document.getElementById('corresponding-author-affiliation').classList.add('error-field');
+        isValid = false;
+      }
+
+      // Validate corresponding author country
+      const correspondingAuthorCountry = document.getElementById('corresponding-author-country').value;
+      if (!correspondingAuthorCountry) {
+        document.getElementById('corresponding-author-country-error').classList.remove('hidden');
+        document.getElementById('corresponding-author-country').classList.add('error-field');
+        isValid = false;
+      }
+
+      // Validate additional authors
+      const additionalAuthors = document.querySelectorAll('.author-item:not(.border-l-4)');
+      for (let i = 0; i < additionalAuthors.length; i++) {
+        const inputs = additionalAuthors[i].querySelectorAll('input[type="text"]');
+        const nameInput = inputs[0];
+        const nameValue = nameInput.value.trim();
+
+        if (!nameValue) {
+          nameInput.classList.add('error-field');
+          isValid = false;
+        }
+      }
+
+      if (isValid) {
+        nextStep(3);
+      }
+    }
+
+    // Step 3 Validation
+    // Step 3 Validation
+    function validateStep3() {
+      let isValid = true;
+
+      // Reset errors
+      document.querySelectorAll('#step3 .error-message').forEach(el => {
+        el.classList.add('hidden');
+      });
+
+      // Validate manuscript file
+      const manuscriptFile = document.getElementById('manuscript').files[0];
+      if (!manuscriptFile) {
+        document.getElementById('manuscript-error').classList.remove('hidden');
+        isValid = false;
+      } else {
+        // Check file type
+        const allowedTypes = ['.docx', '.pdf'];
+        const fileExtension = manuscriptFile.name.split('.').pop().toLowerCase();
+        if (!allowedTypes.includes('.' + fileExtension)) {
+          document.getElementById('manuscript-type-error').classList.remove('hidden');
+          isValid = false;
+        }
+
+        // Check file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        if (manuscriptFile.size > maxSize) {
+          document.getElementById('manuscript-size-error').classList.remove('hidden');
+          isValid = false;
+        }
+      }
+
+      if (isValid) {
+        nextStep(4);
+      }
+    }
+
+    // Add author functionality with limit of 5
+    document.getElementById('add-author').addEventListener('click', () => {
+      const authorList = document.getElementById('author-list');
+      const authorCount = authorList.querySelectorAll('.author-item:not(.border-l-4)').length;
+
+      if (authorCount >= 5) {
+        document.getElementById('max-authors-message').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('max-authors-message').classList.add('hidden');
+
+      const newAuthor = document.createElement('div');
+      newAuthor.className = 'author-item';
+      newAuthor.innerHTML = `
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="font-bold text-gray-700">Author #${authorCount + 2}</h3>
+        <span class="remove-author"><i class="fas fa-times"></i> Remove</span>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-gray-600 text-sm mb-1">Full Name. <span class="text-red-500">*</span></label>
+          <input type="text" placeholder="First and Last name" 
+                 class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-gray-600 text-sm mb-1">Email</label>
+          <input type="email" placeholder="author@example.com" 
+                 class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-gray-600 text-sm mb-1">Affiliation</label>
+          <input type="text" placeholder="University/Organization" 
+                 class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-gray-600 text-sm mb-1">Country</label>
+          <select class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Select country</option>
+              <option value="af">Afghanistan</option>
+  <option value="al">Albania</option>
+  <option value="dz">Algeria</option>
+  <option value="as">American Samoa</option>
+  <option value="ad">Andorra</option>
+  <option value="ao">Angola</option>
+  <option value="ai">Anguilla</option>
+  <option value="ag">Antigua and Barbuda</option>
+  <option value="ar">Argentina</option>
+  <option value="am">Armenia</option>
+  <option value="aw">Aruba</option>
+  <option value="au">Australia</option>
+  <option value="at">Austria</option>
+  <option value="az">Azerbaijan</option>
+  <option value="bs">Bahamas</option>
+  <option value="bh">Bahrain</option>
+  <option value="bd">Bangladesh</option>
+  <option value="bb">Barbados</option>
+  <option value="by">Belarus</option>
+  <option value="be">Belgium</option>
+  <option value="bz">Belize</option>
+  <option value="bj">Benin</option>
+  <option value="bm">Bermuda</option>
+  <option value="bt">Bhutan</option>
+  <option value="bo">Bolivia</option>
+  <option value="ba">Bosnia and Herzegovina</option>
+  <option value="bw">Botswana</option>
+  <option value="br">Brazil</option>
+  <option value="bn">Brunei Darussalam</option>
+  <option value="bg">Bulgaria</option>
+  <option value="bf">Burkina Faso</option>
+  <option value="bi">Burundi</option>
+  <option value="kh">Cambodia</option>
+  <option value="cm">Cameroon</option>
+  <option value="ca">Canada</option>
+  <option value="cv">Cape Verde</option>
+  <option value="cf">Central African Republic</option>
+  <option value="td">Chad</option>
+  <option value="cl">Chile</option>
+  <option value="cn">China</option>
+  <option value="co">Colombia</option>
+  <option value="km">Comoros</option>
+  <option value="cg">Congo</option>
+  <option value="cd">Congo, Democratic Republic</option>
+  <option value="cr">Costa Rica</option>
+  <option value="ci">Côte d'Ivoire</option>
+  <option value="hr">Croatia</option>
+  <option value="cu">Cuba</option>
+  <option value="cy">Cyprus</option>
+  <option value="cz">Czech Republic</option>
+  <option value="dk">Denmark</option>
+  <option value="dj">Djibouti</option>
+  <option value="dm">Dominica</option>
+  <option value="do">Dominican Republic</option>
+  <option value="ec">Ecuador</option>
+  <option value="eg">Egypt</option>
+  <option value="sv">El Salvador</option>
+  <option value="gq">Equatorial Guinea</option>
+  <option value="er">Eritrea</option>
+  <option value="ee">Estonia</option>
+  <option value="sz">Eswatini</option>
+  <option value="et">Ethiopia</option>
+  <option value="fj">Fiji</option>
+  <option value="fi">Finland</option>
+  <option value="fr">France</option>
+  <option value="ga">Gabon</option>
+  <option value="gm">Gambia</option>
+  <option value="ge">Georgia</option>
+  <option value="de">Germany</option>
+  <option value="gh">Ghana</option>
+  <option value="gr">Greece</option>
+  <option value="gd">Grenada</option>
+  <option value="gt">Guatemala</option>
+  <option value="gn">Guinea</option>
+  <option value="gw">Guinea-Bissau</option>
+  <option value="gy">Guyana</option>
+  <option value="ht">Haiti</option>
+  <option value="hn">Honduras</option>
+  <option value="hu">Hungary</option>
+  <option value="is">Iceland</option>
+  <option value="in">India</option>
+  <option value="id">Indonesia</option>
+  <option value="ir">Iran</option>
+  <option value="iq">Iraq</option>
+  <option value="ie">Ireland</option>
+  <option value="il">Israel</option>
+  <option value="it">Italy</option>
+  <option value="jm">Jamaica</option>
+  <option value="jp">Japan</option>
+  <option value="jo">Jordan</option>
+  <option value="kz">Kazakhstan</option>
+  <option value="ke">Kenya</option>
+  <option value="ki">Kiribati</option>
+  <option value="kw">Kuwait</option>
+  <option value="kg">Kyrgyzstan</option>
+  <option value="la">Lao People's Democratic Republic</option>
+  <option value="lv">Latvia</option>
+  <option value="lb">Lebanon</option>
+  <option value="ls">Lesotho</option>
+  <option value="lr">Liberia</option>
+  <option value="ly">Libya</option>
+  <option value="li">Liechtenstein</option>
+  <option value="lt">Lithuania</option>
+  <option value="lu">Luxembourg</option>
+  <option value="mg">Madagascar</option>
+  <option value="mw">Malawi</option>
+  <option value="my">Malaysia</option>
+  <option value="mv">Maldives</option>
+  <option value="ml">Mali</option>
+  <option value="mt">Malta</option>
+  <option value="mh">Marshall Islands</option>
+  <option value="mr">Mauritania</option>
+  <option value="mu">Mauritius</option>
+  <option value="mx">Mexico</option>
+  <option value="fm">Micronesia</option>
+  <option value="md">Moldova</option>
+  <option value="mc">Monaco</option>
+  <option value="mn">Mongolia</option>
+  <option value="me">Montenegro</option>
+  <option value="ma">Morocco</option>
+  <option value="mz">Mozambique</option>
+  <option value="mm">Myanmar</option>
+  <option value="na">Namibia</option>
+  <option value="nr">Nauru</option>
+  <option value="np">Nepal</option>
+  <option value="nl">Netherlands</option>
+  <option value="nz">New Zealand</option>
+  <option value="ni">Nicaragua</option>
+  <option value="ne">Niger</option>
+  <option value="ng">Nigeria</option>
+  <option value="kp">North Korea</option>
+  <option value="mk">North Macedonia</option>
+  <option value="no">Norway</option>
+  <option value="om">Oman</option>
+  <option value="pk">Pakistan</option>
+  <option value="pw">Palau</option>
+  <option value="ps">Palestine</option>
+  <option value="pa">Panama</option>
+  <option value="pg">Papua New Guinea</option>
+  <option value="py">Paraguay</option>
+  <option value="pe">Peru</option>
+  <option value="ph">Philippines</option>
+  <option value="pl">Poland</option>
+  <option value="pt">Portugal</option>
+  <option value="qa">Qatar</option>
+  <option value="ro">Romania</option>
+  <option value="ru">Russia</option>
+  <option value="rw">Rwanda</option>
+  <option value="kn">Saint Kitts and Nevis</option>
+  <option value="lc">Saint Lucia</option>
+  <option value="vc">Saint Vincent and the Grenadines</option>
+  <option value="ws">Samoa</option>
+  <option value="sm">San Marino</option>
+  <option value="st">Sao Tome and Principe</option>
+  <option value="sa">Saudi Arabia</option>
+  <option value="sn">Senegal</option>
+  <option value="rs">Serbia</option>
+  <option value="sc">Seychelles</option>
+  <option value="sl">Sierra Leone</option>
+  <option value="sg">Singapore</option>
+  <option value="sk">Slovakia</option>
+  <option value="si">Slovenia</option>
+  <option value="sb">Solomon Islands</option>
+  <option value="so">Somalia</option>
+  <option value="za">South Africa</option>
+  <option value="kr">South Korea</option>
+  <option value="ss">South Sudan</option>
+  <option value="es">Spain</option>
+  <option value="lk">Sri Lanka</option>
+  <option value="sd">Sudan</option>
+  <option value="sr">Suriname</option>
+  <option value="se">Sweden</option>
+  <option value="ch">Switzerland</option>
+  <option value="sy">Syria</option>
+  <option value="tw">Taiwan</option>
+  <option value="tj">Tajikistan</option>
+  <option value="tz">Tanzania</option>
+  <option value="th">Thailand</option>
+  <option value="tl">Timor-Leste</option>
+  <option value="tg">Togo</option>
+  <option value="to">Tonga</option>
+  <option value="tt">Trinidad and Tobago</option>
+  <option value="tn">Tunisia</option>
+  <option value="tr">Turkey</option>
+  <option value="tm">Turkmenistan</option>
+  <option value="tv">Tuvalu</option>
+  <option value="ug">Uganda</option>
+  <option value="ua">Ukraine</option>
+  <option value="ae">United Arab Emirates</option>
+  <option value="uk">United Kingdom</option>
+  <option value="us">United States</option>
+  <option value="uy">Uruguay</option>
+  <option value="uz">Uzbekistan</option>
+  <option value="vu">Vanuatu</option>
+  <option value="ve">Venezuela</option>
+  <option value="vn">Vietnam</option>
+  <option value="ye">Yemen</option>
+  <option value="zm">Zambia</option>
+  <option value="zw">Zimbabwe</option>
+          </select>
+        </div>
+      </div>
+    `;
+
+      authorList.appendChild(newAuthor);
+
+      // Add event listener to new remove button
+      newAuthor.querySelector('.remove-author').addEventListener('click', () => {
+        newAuthor.remove();
+        document.getElementById('max-authors-message').classList.add('hidden');
+      });
+    });
+
+    // File upload display names
+    document.getElementById('manuscript').addEventListener('change', function (e) {
+      if (this.files.length > 0) {
+        document.getElementById('manuscript-name').textContent = this.files[0].name;
+      }
+    });
+
+    document.getElementById('cover-letter').addEventListener('change', function (e) {
+      if (this.files.length > 0) {
+        document.getElementById('cover-letter-name').textContent = this.files[0].name;
+      }
+    });
+
+    document.getElementById('supplementary').addEventListener('change', function (e) {
+      if (this.files.length > 0) {
+        document.getElementById('supplementary-name').textContent = this.files[0].name;
+      }
+    });
+
+    // Collect form data as FormData object for file upload
+    function collectFormData() {
+      const formData = new FormData();
+
+      formData.append('paper_title', document.getElementById('paper-title').value.trim());
+      formData.append('corresponding_author_name', document.getElementById('corresponding-author-name').value.trim());
+      formData.append('corresponding_author_email', document.getElementById('corresponding-author-email').value.trim());
+      formData.append('corresponding_author_affiliation', document.getElementById('corresponding-author-affiliation').value.trim());
+      formData.append('corresponding_author_country', document.getElementById('corresponding-author-country').value);
+      formData.append('abstract', document.getElementById('abstract').value.trim());
+      formData.append('keywords', document.getElementById('keywords').value.trim());
+      formData.append('category', document.getElementById('category').value);
+
+      const funding = document.querySelector('input[name="funding"]:checked')?.value || 'no';
+      formData.append('funding', funding);
+
+      // Collect additional authors
+      const additionalAuthors = document.querySelectorAll('.author-item:not(.border-l-4)');
+      additionalAuthors.forEach((author, index) => {
+        const inputs = author.querySelectorAll('input, select');
+        // Assuming order: Name, Email, Affiliation, Country
+        const name = inputs[0].value.trim();
+        const email = inputs[1].value.trim();
+        const affiliation = inputs[2].value.trim();
+        const country = inputs[3].value;
+
+        if (name) formData.append(`additional_author_name_${index + 1}`, name);
+        if (email) formData.append(`additional_author_email_${index + 1}`, email);
+        if (affiliation) formData.append(`additional_author_affiliation_${index + 1}`, affiliation);
+        if (country) formData.append(`additional_author_country_${index + 1}`, country);
+      });
+
+      // Append files
+      const manuscriptFile = document.getElementById('manuscript').files[0];
+      if (manuscriptFile) {
+        formData.append('manuscript', manuscriptFile);
+      }
+
+      const coverLetterFile = document.getElementById('cover-letter').files[0];
+      if (coverLetterFile) {
+        formData.append('cover_letter', coverLetterFile);
+      }
+
+      const supplementaryFile = document.getElementById('supplementary').files[0];
+      if (supplementaryFile) {
+        formData.append('supplementary', supplementaryFile);
+      }
+
+      return formData;
+    }
+
+    // Submit form
+    document.getElementById('submit-paper').addEventListener('click', async function (e) {
+      e.preventDefault();
+
+      // Validate agreement checkbox
+      const agreement = document.getElementById('agreement');
+      if (!agreement.checked) {
+        document.getElementById('agreement-error').classList.remove('hidden');
+        return;
+      }
+
+      // Show loading state
+      const submitBtn = document.getElementById('submit-paper');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+      submitBtn.disabled = true;
+
+      try {
+        // 1. Collect form data
+        const formData = collectFormData();
+
+        // 2. Prepare submission (upload file and save data)
+        const prepareResponse = await fetch('/prepare-submission', {
+          method: 'POST',
+          body: formData // allow browser to set Content-Type header with boundary
+        });
+
+        const prepareResult = await prepareResponse.json();
+
+        if (!prepareResult.success) {
+          throw new Error(prepareResult.error || 'Submission preparation failed');
+        }
+
+        const paperId = prepareResult.paper_id;
+
+        window.location.href = `/submission-success?paper_id=${encodeURIComponent(paperId)}`;
+
+      } catch (error) {
+        console.error('Submission error:', error);
+        alert(`Error: ${error.message}. Please try again.`);
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function (event) {
+      const isClickInsideMenu = mobileMenu.contains(event.target);
+      const isClickOnButton = mobileMenuButton.contains(event.target);
+
+      if (!isClickInsideMenu && !isClickOnButton && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+
+</html>

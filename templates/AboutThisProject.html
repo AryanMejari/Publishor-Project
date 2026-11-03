@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About This Project - ISIRP Research Journal</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="icon" type="image/png" href="/static/isirp-logo.png">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --accent: #8b5cf6;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+            scroll-behavior: smooth;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+        }
+
+        #mobile-menu {
+            text-align: center;
+        }
+
+        #mobile-menu .flex {
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <div
+                    class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
+                    ISIRP
+                </div>
+                <div class="text-2xl font-bold text-blue-700">Research Journal</div>
+            </div>
+
+            <nav class="hidden md:flex space-x-8 text-lg">
+                <a href="/" class="nav-link text-gray-700 hover:text-blue-600">Home</a>
+                <a href="/#about" class="nav-link text-gray-700 hover:text-blue-600">About</a>
+                <a href="/#features" class="nav-link text-gray-700 hover:text-blue-600">Features</a>
+                <a href="/#guidelines" class="nav-link text-gray-700 hover:text-blue-600">Guidelines</a>
+                <a href="/submit" class="btn-primary text-white px-5 py-2 rounded-full font-medium">Submit Paper</a>
+                <a href="/dashboard" class="text-blue-600 font-semibold hover:underline flex items-center">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </a>
+            </nav>
+
+            <button id="mobile-menu-button" class="md:hidden text-gray-600">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="hidden bg-white px-4 pt-2 pb-4 border-t">
+            <div class="flex space-y-3">
+                <a href="/" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Home</a>
+                <a href="/#about" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">About</a>
+                <a href="/#features" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Features</a>
+                <a href="/#guidelines" class="text-gray-700 py-2 px-4 rounded hover:bg-blue-50">Guidelines</a>
+                <a href="/submit" class="btn-primary text-white py-2 px-4 rounded-full font-medium">Submit Paper</a>
+                <a href="/dashboard" class="text-blue-600 font-semibold py-2 px-4 rounded hover:bg-blue-50">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- About This Project -->
+    <section class="py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-12">
+                <h1 class="text-3xl md:text-4xl font-bold text-blue-800">About This Project</h1>
+                <div class="w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+                <p class="mt-6 text-gray-600">Transparency, intent, and good-faith development</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 md:p-8 text-gray-700 space-y-6">
+
+                <p>
+                    ISIRP (International Scientific and Innovative Research Publication) is a
+                    <strong>basic, independent, and experimental project</strong> created purely out of
+                    academic interest, learning, and personal exploration.
+                    This platform is not intended to impersonate or misrepresent any official academic
+                    journal, indexing body, or publishing authority.
+                </p>
+
+                <p>
+                    There is <strong>no intention to cause copyright infringement, patent infringement,
+                        trademark violation, false publication, or deceptive representation</strong> of any kind.
+                    Any similarities in naming, structure, or features with existing platforms are purely
+                    coincidental and unintentional.
+                </p>
+
+                <p>
+                    All research papers and submissions published on this platform are the responsibility
+                    of their respective authors. ISIRP does not guarantee originality, legal clearance,
+                    indexing status, or academic recognition of any submission.
+                </p>
+
+                <p>
+                    This project does not claim guaranteed publication outcomes, impact factors,
+                    certifications, or affiliations with any regulatory or academic institutions.
+                    All services are provided on a best-effort and learning-oriented basis.
+                </p>
+
+                <p>
+                    If any content, design, terminology, or functionality is found to be inaccurate,
+                    inappropriate, misleading, or legally concerning, the concerned individual or
+                    organization is encouraged to contact us directly.
+                    We assure that such concerns will be reviewed in good faith and necessary corrective
+                    actions will be taken promptly, including modification or removal of content.
+                </p>
+
+                <p>
+                    By accessing or using this website, you acknowledge that this platform is a
+                    non-commercial, experimental initiative and agree that the project owner shall not
+                    be held liable for any direct or indirect consequences arising from its use.
+                </p>
+
+                <p class="font-medium">
+                    For concerns, clarifications, or takedown requests, please contact:
+                    <br>Email: <strong>teamisirp@gmail.com</strong>
+                </p>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center text-white mb-6">
+                        <div
+                            class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3">
+                            ISIRP</div>
+                        <div class="text-xl font-bold">Research Journal</div>
+                    </div>
+                    <p class="mb-4">
+                        Revolutionizing academic publishing with advanced review and certification.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-white text-lg font-semibold mb-6">Quick Links</h3>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-white">Home</a></li>
+                        <li><a href="/#about" class="hover:text-white">About Us</a></li>
+                        <li><a href="/#features" class="hover:text-white">Features</a></li>
+                        <li><a href="/#guidelines" class="hover:text-white">Guidelines</a></li>
+                        <li><a href="/submit" class="hover:text-white">Submit Paper</a></li>
+                        <li><a href="/submissionagreement" target="_blank" class="hover:text-white">Submission
+                                Agreement</a></li>
+                        <li><a href="/AIReviewprocess" target="_blank" class="hover:text-white">AI Review Process</a>
+                        </li>
+                        <li><a href="/AboutThisProject" target="_blank" class="hover:text-white">About This Project</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-white text-lg font-semibold mb-6">Resources and Policies</h3>
+                    <ul class="space-y-3">
+                        <li><a href="/files/review-on-blue-brain-technology-a-novel-tool-for-studying-brain-and-brain-related-disorders-IJERTV9IS120062.pdf"
+                                target="_blank" class="hover:text-white">Sample Papers</a></li>
+                        <li><a href="/files/Research-paper-template.doc" target="_blank"
+                                class="hover:text-white">Templates</a></li>
+                        <li><a href="/faq" target="_blank" class="hover:text-white">FAQs</a></li>
+                        <li><a href="/termsandconditions" target="_blank" class="hover:text-white">Terms and
+                                Conditions</a></li>
+                        <li><a href="/disclaimer" target="_blank" class="hover:text-white">Disclaimer</a></li>
+                        <li><a href="/return" target="_blank" class="hover:text-white">Return Policy</a></li>
+                        <li><a href="/privacy" target="_blank" class="hover:text-white">Privacy Policy</a></li>
+                        <li><a href="/refund" target="_blank" class="hover:text-white">Refund Policy</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-white text-lg font-semibold mb-6">Contact Us</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-3 text-blue-400"></i>
+                            <span>teamisirp@gmail.com</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone mt-1 mr-3 text-blue-400"></i>
+                            <span>+91 7039095763</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-blue-400"></i>
+                            <span>Mumbai ,Maharashtra, IN 550001</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
+                <p>&copy; 2025 ISIRP. All rights reserved.</p>
+                <p class="mt-2">Designed for innovation. Powered by AI.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const btn = document.getElementById('mobile-menu-button');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+    </script>
+
+</body>
+
+</html>
