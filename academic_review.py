@@ -177,7 +177,7 @@ def _report_text(paper: Dict[str, Any], analysis: Dict[str, Any], generated_at: 
     return "\n".join(lines)
 
 
-def run_review(paper_id: str, manuscript_path: str) -> None:
+def run_review(paper_id: str, manuscript_path: str) -> str:
     """Run local screening and persist results for the existing dashboard."""
     started_at = datetime.now(timezone.utc).isoformat()
     update_paper(paper_id, {"review_status": "running", "review_started_at": started_at})
@@ -228,6 +228,7 @@ def run_review(paper_id: str, manuscript_path: str) -> None:
             get_firestore_client().collection("isirpalldata").document(paper_id).update(
                 {"review_ai.error": admin_firestore.DELETE_FIELD}
             )
+        return str(report_path)
     except Exception as exc:
         update_paper(
             paper_id,

@@ -78,67 +78,38 @@ SMTP_PORT = int(os.getenv('SMTP_PORT', '587'))
 EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS', '')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD', '')
 
-def send_confirmation_email(to_email, paper_id, submission_date):
-    subject = 'Your Research Paper Submission Confirmation'
-    html_body = f"""
-    <html>
-    <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
-        <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        
-        <div style="text-align: center; margin-bottom: 30px;">
-            
-            <h2 style="color: #2c3e50;">ISIRP - Research Submission Confirmation</h2>
+def _email_shell(preheader, title, content):
+    return f"""
+    <html><body style="margin:0;background:#eef2ff;font-family:Arial,sans-serif;color:#172033;">
+      <div style="padding:32px 12px;">
+        <div style="max-width:620px;margin:auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 12px 32px rgba(15,23,42,.12);">
+          <div style="padding:28px 32px;background:linear-gradient(135deg,#172554,#4338ca);color:#fff;">
+            <div style="font-size:13px;letter-spacing:2px;font-weight:bold;">ISIRP RESEARCH PUBLICATIONS</div>
+            <h1 style="margin:14px 0 4px;font-size:26px;">{title}</h1>
+            <div style="font-size:13px;color:#c7d2fe;">{preheader}</div>
+          </div>
+          <div style="padding:32px;">{content}</div>
+          <div style="padding:20px 32px;background:#f8fafc;color:#64748b;font-size:12px;">
+            Automated platform notification · ISIRP hobby research platform<br>
+            This message is not accredited peer-review certification.
+          </div>
         </div>
-
-        <p style="font-size: 16px; color: #333333;">Dear Researcher,</p>
-
-        <p style="font-size: 16px; color: #333333;">
-            We are pleased to inform you that your research paper has been successfully submitted on <strong>{submission_date}</strong> to the <strong>International Scientific and Innovative Research Publications (ISIRP)</strong>.
-        </p>
-
-        <p style="font-size: 16px; color: #333333;">
-            <strong>Submission Details:</strong><br>
-            <b>Paper ID:</b> {paper_id}<br>
-            <b>Submission Date:</b> {submission_date}
-        </p>
-
-        <p style="font-size: 16px; color: #333333;">
-            Kindly retain this Paper ID for future correspondence. Our editorial board will now begin the review process. You can expect a response within the next <strong>1-2 Hours.</strong>.
-        </p>
-
-        <p style="font-size: 16px; color: #333333;">
-            If you have any questions or need further assistance, please do not hesitate to contact us at <a href="mailto:teamisirp@gmail.com">teamisirp@gmail.com</a>.
-        </p>
-
-        <p style="font-size: 16px; color: #333333;">
-            Thank you for choosing ISIRP to publish your work. We look forward to reviewing your submission.
-        </p>
-
-        <p style="font-size: 16px; color: #333333;">
-            Best regards,<br>
-            <strong>Editorial Team</strong><br>
-            ISIRP
-        </p>
-
-        <hr style="margin-top: 30px; border: none; border-top: 1px solid #dddddd;">
-
-        <p style="font-size: 12px; color: #888888; text-align: center;">
-            © 2025 ISIRP. All rights reserved.<br>
-            Visit us at <a href="https://isirp.tech" style="color: #888888;">www.isirp.tech</a>
-        </p>
-
-        </div>
-    </body>
-    </html>
+      </div>
+    </body></html>
     """
 
+
+def _send_message(to_email, subject, html_body, attachments=None):
     msg = MIMEMultipart()
-    msg["From"] = formataddr(("ISIRP", EMAIL_ADDRESS))
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    
-    msg.attach(MIMEText(html_body, 'html'))
-    
+    msg["From"] = formataddr(("ISIRP Research Publications", EMAIL_ADDRESS))
+    msg["To"] = to_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(html_body, "html"))
+    for path in attachments or []:
+        with open(path, "rb") as file:
+            part = MIMEApplication(file.read(), Name=os.path.basename(path))
+        part["Content-Disposition"] = f'attachment; filename="{os.path.basename(path)}"'
+        msg.attach(part)
     try:
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
@@ -149,43 +120,64 @@ def send_confirmation_email(to_email, paper_id, submission_date):
     except Exception as e:
         print(f"Failed to send email: {e}")
         return False
+
+
+def send_confirmation_email(to_email, paper_id, submission_date):
+    content = f"""
+      <p style="font-size:16px;">Dear Researcher,</p>
+      <p>Your manuscript has been received successfully and is now queued for automated screening.</p>
+      <div style="padding:20px;background:#eef2ff;border-radius:12px;margin:24px 0;">
+        <div style="font-size:12px;color:#4f46e5;font-weight:bold;">SUBMISSION REFERENCE</div>
+        <div style="font-size:24px;font-weight:bold;margin-top:8px;">{paper_id}</div>
+        <div style="color:#475569;margin-top:6px;">Submitted on {submission_date}</div>
+      </div>
+      <p>Keep this Paper ID and your corresponding-author email to access the dashboard and track your review.</p>
+      <p style="color:#475569;">Next: manuscript screening, review report generation, and certificate processing.</p>
+      <p>Regards,<br><strong>ISIRP Editorial Team</strong></p>
+    """
+    return _send_message(
+        to_email,
+        f"Submission received · {paper_id}",
+        _email_shell("Your manuscript is safely registered", "Submission received", content),
+    )
+
+
+def send_review_report_email(to_email, paper_id, report_path):
+    content = f"""
+      <p style="font-size:16px;">Your automated screening report for <strong>{paper_id}</strong> is ready.</p>
+      <div style="padding:18px;background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;margin:22px 0;">
+        <strong>Review stage complete</strong><br>
+        The report is attached to this email. It contains structural checks, scores,
+        findings, counter-arguments, and suggested future directions.
+      </div>
+      <p>You can also use your Paper ID and corresponding-author email to access the dashboard.</p>
+      <p style="color:#64748b;font-size:13px;">This is automated screening feedback, not accredited peer review.</p>
+      <p>Regards,<br><strong>ISIRP Academic Screening Team</strong></p>
+    """
+    return _send_message(
+        to_email,
+        f"Screening report ready · {paper_id}",
+        _email_shell("Your automated academic screening is complete", "Review report ready", content),
+        [report_path],
+    )
     
 def send_certificates_email(to_email, paper_id, certificate_paths):
-    subject = 'Your Research Paper Certificates'
-    body = f"""
-    <html>
-    <body>
-        <h2>Thank You for Your Submission!</h2>
-        <p>Your research paper (ID: {paper_id}) has been processed successfully.</p>
-        <p>Attached are the certificates for all authors. Please download and distribute them to your co-authors.</p>
-        <p>Best regards,<br>ISIRP Team</p>
-    </body>
-    </html>
+    content = f"""
+      <p style="font-size:16px;">Congratulations. Your paper <strong>{paper_id}</strong> has completed the ISIRP publication workflow.</p>
+      <div style="padding:20px;background:#fffbeb;border:1px solid #f59e0b;border-radius:12px;margin:22px 0;">
+        <div style="font-size:12px;color:#92400e;font-weight:bold;">PUBLICATION STATUS</div>
+        <div style="font-size:22px;font-weight:bold;color:#166534;margin-top:8px;">Accepted for publication</div>
+        <div style="color:#475569;margin-top:6px;">Certificates for all listed authors are attached.</div>
+      </div>
+      <p>Download and distribute the attached certificates to your co-authors. Your verification page remains available through the Paper ID.</p>
+      <p>Regards,<br><strong>ISIRP Editorial Team</strong></p>
     """
-    
-    msg = MIMEMultipart()
-    msg["From"] = formataddr(("ISIRP", EMAIL_ADDRESS))
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'html'))
-    
-    # Attach certificates
-    for path in certificate_paths:
-        with open(path, 'rb') as f:
-            part = MIMEApplication(f.read(), Name=os.path.basename(path))
-        part['Content-Disposition'] = f'attachment; filename="{os.path.basename(path)}"'
-        msg.attach(part)
-    
-    try:
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()
-        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        return True
-    except Exception as e:
-        print(f"Certificate email failed: {e}")
-        return False
+    return _send_message(
+        to_email,
+        f"Accepted for publication · certificates · {paper_id}",
+        _email_shell("Publication workflow complete", "Publication certificate issued", content),
+        certificate_paths,
+    )
 
 # Serve index.html as the main page
 @app.route('/')
@@ -316,7 +308,10 @@ def prepare_submission():
             temporary_file.write(manuscript_bytes)
             temporary_path = temporary_file.name
         try:
-            run_review(paper_id, temporary_path)
+            report_path = run_review(paper_id, temporary_path)
+            send_review_report_email(
+                corresponding_author_email, paper_id, report_path
+            )
             from certificate_generator import generate_certificates
 
             generate_certificates(paper_id)
