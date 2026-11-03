@@ -64,8 +64,8 @@ challenges through the moderation endpoint.
    account JSON as one-line JSON, not a local Windows file path.
 4. Deploy and test `/`, `/community`, `/verify/<paper-id>`, and a Firestore
    login. Render's free service sleeps when idle and its local filesystem is
-   ephemeral; Firebase Firestore preserves metadata, but uploaded files,
-   certificates, and reports need Firebase Storage before production use.
+   ephemeral; Firebase Firestore preserves metadata, while Cloudinary stores
+   uploaded files, certificates, and reports.
 
 ## Deploying on Vercel
 
@@ -82,10 +82,10 @@ Vercel is supported through `api/index.py` and `vercel.json`.
    `api/index.py` as the serverless function.
 5. Test `/`, `/community`, `/api/community/papers`, and a Firestore login.
 
-Before deploying, enable **Firebase Storage** and add its bucket name as
-`FIREBASE_STORAGE_BUCKET` (usually
-`your-project-id.firebasestorage.app`). The Vercel submission path stores the
-manuscript, screening report, and certificates in that bucket. It runs the
+Create a free Cloudinary account and add `CLOUDINARY_CLOUD_NAME`,
+`CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` from its dashboard to
+Vercel. The Vercel submission path stores the manuscript, screening report,
+and certificates in Cloudinary. It runs the
 review, certificate generation, and email delivery synchronously before
 returning success, so no background thread is required. On Linux/Vercel,
 certificate creation uses the included ReportLab PDF fallback because
@@ -94,5 +94,5 @@ Microsoft Word-based `docx2pdf` conversion is unavailable there.
 Vercel still imposes a serverless execution timeout. Keep manuscripts
 reasonably sized and use the deterministic screening fallback if Gemini makes
 the request too slow. If your review prompt or email provider exceeds the
-timeout, move only the review/email step to a queue worker; Firebase Storage
-and Firestore remain the durable storage layer.
+timeout, move only the review/email step to a queue worker; Cloudinary and
+Firestore remain the durable storage layer.
