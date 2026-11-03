@@ -67,10 +67,10 @@ def download_file(filename):
     """Serve static files from the files directory"""
     return send_from_directory('static/files', filename)
 
-# Configure upload folder
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# Vercel only permits writes under the temporary system directory. Uploaded
+# manuscripts are sent to Cloudinary; this folder is only a local fallback.
+UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), 'isirp-uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     
 # Email configuration
 SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.gmail.com')

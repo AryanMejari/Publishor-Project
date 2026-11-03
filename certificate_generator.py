@@ -101,7 +101,7 @@ def generate_certificates(paper_id):
             paper.get('additional_author_name_5')
         ]
         authors = [name for name in authors if name]
-        certificates_dir = BASE_DIR / "certificates"
+        certificates_dir = Path(os.getenv("ISIRP_TEMP_DIR", "/tmp")) / "isirp-certificates"
         certificates_dir.mkdir(exist_ok=True)
         pdf_paths = []
 

@@ -16,7 +16,7 @@ from firebase_storage import upload_bytes
 
 
 BASE_DIR = Path(__file__).resolve().parent
-REPORTS_DIR = BASE_DIR / "review_reports"
+REPORTS_DIR = Path(os.getenv("ISIRP_TEMP_DIR", "/tmp")) / "isirp-review-reports"
 load_dotenv(BASE_DIR / ".env")
 
 REQUIRED_SECTIONS = {
