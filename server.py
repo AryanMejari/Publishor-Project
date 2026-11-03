@@ -22,6 +22,7 @@ import random
 import re
 import secrets
 import tempfile
+import requests
 from dotenv import load_dotenv
 from werkzeug.security import check_password_hash, generate_password_hash
 from basic_paper_evaluator import paper_evaluation_process
@@ -690,7 +691,12 @@ def download_review_report():
         return jsonify({'error': 'Review report is not available'}), 404
 
     report_path = paper["review_report_path"]
-    report_bytes = download_bytes(report_path)
+    try:
+        report_bytes = download_bytes(report_path)
+    except requests.HTTPError:
+        return jsonify({'error': 'Report storage rejected the download request'}), 502
+    except requests.RequestException:
+        return jsonify({'error': 'Report storage is temporarily unavailable'}), 502
     if report_bytes is None and os.path.isfile(report_path):
         return send_file(report_path, as_attachment=True)
     if report_bytes is None:
@@ -727,7 +733,12 @@ def download_certificate():
     if not path:
         return jsonify({'error': 'Missing path parameter'}), 400
 
-    certificate_bytes = download_bytes(path)
+    try:
+        certificate_bytes = download_bytes(path)
+    except requests.HTTPError:
+        return jsonify({'error': 'Certificate storage rejected the download request'}), 502
+    except requests.RequestException:
+        return jsonify({'error': 'Certificate storage is temporarily unavailable'}), 502
     if certificate_bytes is None and os.path.isfile(path):
         return send_file(path, as_attachment=True)
     if certificate_bytes is None:
@@ -784,7 +795,12 @@ def view_paper(paper_id):
     
     if not paper:
         return "Paper not found", 404
-    manuscript = download_bytes(paper.get("manuscript_storage_path"))
+    try:
+        manuscript = download_bytes(paper.get("manuscript_storage_path"))
+    except requests.HTTPError:
+        return "Manuscript storage rejected the download request", 502
+    except requests.RequestException:
+        return "Manuscript storage is temporarily unavailable", 502
     if manuscript is None:
         return "File not found", 404
     extension = os.path.splitext(paper.get("manuscript_filename", ""))[1].lower()
