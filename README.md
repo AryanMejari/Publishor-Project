@@ -67,25 +67,32 @@ challenges through the moderation endpoint.
    ephemeral; Firebase Firestore preserves metadata, but uploaded files,
    certificates, and reports need Firebase Storage before production use.
 
-   ## Deploying on Vercel
+## Deploying on Vercel
 
-   Vercel is also supported through `api/index.py` and `vercel.json`.
+Vercel is supported through `api/index.py` and `vercel.json`.
 
-   1. Import `AryanMejari/Publishor-Project` into Vercel and select the `main`
-      branch.
-   2. Leave the framework preset as **Other**. Vercel will detect the Python
-      function from `api/index.py`.
-   3. Add the variables from `.env.example` under **Project Settings →
-      Environment Variables**. Paste the complete Firebase service-account JSON
-      into `FIREBASE_SERVICE_ACCOUNT_JSON`; do not use a local file path.
-   4. Deploy. Do not use the Gunicorn start command on Vercel; Vercel invokes
-      `api/index.py` as the serverless function.
-   5. Test `/`, `/community`, `/api/community/papers`, and a Firestore login.
+1. Import `AryanMejari/Publishor-Project` into Vercel and select the `main`
+   branch.
+2. Leave the framework preset as **Other**. Vercel detects the Python
+   function from `api/index.py`.
+3. Add every variable from `.env.example` under **Project Settings →
+   Environment Variables**. Paste the complete Firebase service-account JSON
+   into `FIREBASE_SERVICE_ACCOUNT_JSON`; do not use a local file path.
+4. Deploy. Do not use the Gunicorn start command on Vercel; Vercel invokes
+   `api/index.py` as the serverless function.
+5. Test `/`, `/community`, `/api/community/papers`, and a Firestore login.
 
-   Vercel functions have execution-time and filesystem limits. The existing
-   submission flow starts certificate, email, and review work in background
-   threads and writes files locally, so those operations are not reliable after a
-   serverless response. For a reliable Vercel deployment, move uploads,
-   certificates, and reports to Firebase Storage and move long-running review
-   work to a queued worker or scheduled service. Firestore metadata and the
-   community features remain suitable for Vercel.
+Before deploying, enable **Firebase Storage** and add its bucket name as
+`FIREBASE_STORAGE_BUCKET` (usually
+`your-project-id.firebasestorage.app`). The Vercel submission path stores the
+manuscript, screening report, and certificates in that bucket. It runs the
+review, certificate generation, and email delivery synchronously before
+returning success, so no background thread is required. On Linux/Vercel,
+certificate creation uses the included ReportLab PDF fallback because
+Microsoft Word-based `docx2pdf` conversion is unavailable there.
+
+Vercel still imposes a serverless execution timeout. Keep manuscripts
+reasonably sized and use the deterministic screening fallback if Gemini makes
+the request too slow. If your review prompt or email provider exceeds the
+timeout, move only the review/email step to a queue worker; Firebase Storage
+and Firestore remain the durable storage layer.

@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from firebase_admin import firestore as admin_firestore
 
 from firebase_store import get_firestore_client, get_paper_by_id, update_paper
+from firebase_storage import upload_bytes
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -194,9 +195,14 @@ def run_review(paper_id: str, manuscript_path: str) -> None:
             analysis["findings"].extend(ai_review.get("concerns", [])[:5])
         report_text = _report_text(paper, analysis, datetime.now(timezone.utc).isoformat())
         report_hash = hashlib.sha256(report_text.encode("utf-8")).hexdigest()
-        REPORTS_DIR.mkdir(exist_ok=True)
         report_path = REPORTS_DIR / f"{paper_id}_screening_report.txt"
+        report_path.parent.mkdir(exist_ok=True)
         report_path.write_text(report_text, encoding="utf-8")
+        report_storage_path = upload_bytes(
+            report_text.encode("utf-8"),
+            f"review-reports/{paper_id}_screening_report.txt",
+            "text/plain; charset=utf-8",
+        )
         completed_at = datetime.now(timezone.utc).isoformat()
         update_paper(
             paper_id,
@@ -209,7 +215,7 @@ def run_review(paper_id: str, manuscript_path: str) -> None:
                 "review_section_checks": analysis["section_checks"],
                 "review_word_count": analysis["word_count"],
                 "review_citation_count": analysis["citation_count"],
-                "review_report_path": str(report_path),
+                "review_report_path": report_storage_path,
                 "review_report_sha256": report_hash,
                 "review_disclosure": analysis["disclosure"],
                 "review_counter_arguments": analysis["counter_arguments"],

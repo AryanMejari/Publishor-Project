@@ -13,6 +13,7 @@ from flask import (
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from io import BytesIO
 import os
 from datetime import datetime
 from email.utils import formataddr
@@ -20,6 +21,7 @@ import threading
 import random
 import re
 import secrets
+import tempfile
 from dotenv import load_dotenv
 from werkzeug.security import check_password_hash, generate_password_hash
 from basic_paper_evaluator import paper_evaluation_process
@@ -41,6 +43,7 @@ from firebase_store import (
     initialize_firebase,
     update_paper,
 )
+from firebase_storage import download_bytes, upload_bytes
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 load_dotenv()
@@ -267,18 +270,24 @@ def prepare_submission():
         if not paper_title or not corresponding_author_name or not corresponding_author_email:
             return jsonify({'success': False, 'error': 'Missing required fields'}), 400
 
-        # Save file
+        # Keep the manuscript in Firebase Storage; the temporary file is only
+        # used while the synchronous review pipeline runs.
         import werkzeug
         filename = werkzeug.utils.secure_filename(file.filename)
-        # Ensure unique filename to prevent overwrite
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         filename = f"{timestamp}_{filename}"
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(file_path)
+        manuscript_bytes = file.read()
+        if not manuscript_bytes:
+            return jsonify({'success': False, 'error': 'The manuscript is empty'}), 400
 
         # Generate unique paper ID
         paper_id = generate_unique_paper_id()
         submission_date = datetime.now().strftime('%Y-%m-%d')
+        manuscript_storage_path = upload_bytes(
+            manuscript_bytes,
+            f"manuscripts/{paper_id}/{filename}",
+            "application/octet-stream",
+        )
 
         create_paper(paper_id, {
             'paper_title': paper_title,
@@ -297,30 +306,28 @@ def prepare_submission():
             'additional_author_cert_5': None,
             'submission_date': submission_date,
             'manuscript_filename': filename,
+            'manuscript_storage_path': manuscript_storage_path,
             'payment_status': 'not_required',
             'review_status': 'queued',
         })
 
-        confirmation_thread = threading.Thread(
-            target=send_confirmation_email,
-            args=(corresponding_author_email, paper_id, submission_date),
-            daemon=True,
-        )
-        confirmation_thread.start()
+        suffix = os.path.splitext(filename)[1].lower()
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as temporary_file:
+            temporary_file.write(manuscript_bytes)
+            temporary_path = temporary_file.name
+        try:
+            run_review(paper_id, temporary_path)
+            from certificate_generator import generate_certificates
 
-        certificate_thread = threading.Thread(
-            target=generate_certificates_background,
-            args=(paper_id,),
-            daemon=True,
-        )
-        certificate_thread.start()
-
-        review_thread = threading.Thread(
-            target=run_review,
-            args=(paper_id, file_path),
-            daemon=True,
-        )
-        review_thread.start()
+            generate_certificates(paper_id)
+            send_confirmation_email(
+                corresponding_author_email, paper_id, submission_date
+            )
+        finally:
+            try:
+                os.unlink(temporary_path)
+            except FileNotFoundError:
+                pass
         
         return jsonify({'success': True, 'paper_id': paper_id})
         
@@ -687,11 +694,18 @@ def download_review_report():
     if not paper or not paper.get('review_report_path'):
         return jsonify({'error': 'Review report is not available'}), 404
 
-    report_path = os.path.abspath(paper['review_report_path'])
-    reports_root = os.path.abspath(REVIEW_REPORTS_DIR) + os.sep
-    if not report_path.startswith(reports_root) or not os.path.isfile(report_path):
+    report_path = paper["review_report_path"]
+    report_bytes = download_bytes(report_path)
+    if report_bytes is None and os.path.isfile(report_path):
+        return send_file(report_path, as_attachment=True)
+    if report_bytes is None:
         return jsonify({'error': 'Review report file not found'}), 404
-    return send_file(report_path, as_attachment=True)
+    return send_file(
+        BytesIO(report_bytes),
+        as_attachment=True,
+        download_name=os.path.basename(report_path),
+        mimetype="text/plain",
+    )
 
 
 @app.route('/verify/<paper_id>')
@@ -717,11 +731,18 @@ def download_certificate():
     path = request.args.get('path')
     if not path:
         return jsonify({'error': 'Missing path parameter'}), 400
-    
-    try:
+
+    certificate_bytes = download_bytes(path)
+    if certificate_bytes is None and os.path.isfile(path):
         return send_file(path, as_attachment=True)
-    except FileNotFoundError:
+    if certificate_bytes is None:
         return jsonify({'error': 'File not found'}), 404
+    return send_file(
+        BytesIO(certificate_bytes),
+        as_attachment=True,
+        download_name=os.path.basename(path),
+        mimetype="application/pdf",
+    )
 
 # @app.route('/papers')
 # def show_papers():
@@ -760,17 +781,25 @@ def view_paper(paper_id):
     
     if not paper:
         return "Paper not found", 404
+    manuscript = download_bytes(paper.get("manuscript_storage_path"))
+    if manuscript is None:
+        return "File not found", 404
+    extension = os.path.splitext(paper.get("manuscript_filename", ""))[1].lower()
+    mimetype = {
+        ".pdf": "application/pdf",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }.get(extension, "application/octet-stream")
+    return send_file(
+        BytesIO(manuscript),
+        as_attachment=False,
+        download_name=paper.get("manuscript_filename", "manuscript"),
+        mimetype=mimetype,
+    )
+
 
 @app.route('/AboutThisProject')
 def about_project():
     return render_template('AboutThisProject.html')
-    
-    file_path = os.path.join(UPLOAD_FOLDER, paper.manuscript_filename)
-    
-    if not os.path.exists(file_path):
-        return "File not found", 404
-    
-    return send_file(file_path, as_attachment=False)
 
 def generate_certificates_background(paper_id):
     # This will run in a separate thread

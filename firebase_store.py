@@ -62,10 +62,14 @@ def initialize_firebase() -> None:
                         f"FIREBASE_SERVICE_ACCOUNT_JSON not found: {credential_path}"
                     )
                 cred = credentials.Certificate(str(credential_path))
+            if os.getenv("FIREBASE_STORAGE_BUCKET"):
+                options["storageBucket"] = os.getenv("FIREBASE_STORAGE_BUCKET")
             firebase_admin.initialize_app(cred, options=options)
         else:
             # This requires GOOGLE_APPLICATION_CREDENTIALS or runtime ADC.
             cred = credentials.ApplicationDefault()
+            if os.getenv("FIREBASE_STORAGE_BUCKET"):
+                options["storageBucket"] = os.getenv("FIREBASE_STORAGE_BUCKET")
             firebase_admin.initialize_app(cred, options=options)
 
     _FIRESTORE_CLIENT = firestore.client()

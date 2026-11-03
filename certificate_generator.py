@@ -7,6 +7,7 @@ from docx.shared import RGBColor, Pt
 from datetime import datetime
 from server import app, send_certificates_email
 from firebase_store import get_paper_by_id, update_paper
+from firebase_storage import upload_bytes
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -132,24 +133,36 @@ def generate_certificates(paper_id):
                 convert(str(docx_path), str(pdf_path))
                 docx_path.unlink()  # remove Word file if PDF created
             except Exception as e:
-                print(f"docx2pdf failed: {e}. Keeping DOCX.")
-                pdf_path = docx_path  # fallback if PDF fails
+                print(f"docx2pdf failed: {e}. Creating a ReportLab PDF fallback.")
+                docx_path.unlink(missing_ok=True)
+                _write_pdf_certificate(
+                    pdf_path,
+                    author_name,
+                    paper.get("paper_title"),
+                    paper.get("paper_id"),
+                    date_str,
+                )
 
             pdf_paths.append(str(pdf_path))
+            certificate_storage_path = upload_bytes(
+                pdf_path.read_bytes(),
+                f"certificates/{pdf_path.name}",
+                "application/pdf",
+            )
 
             # Prepare cert path updates for Firestore
             if i == 0:
-                certificate_updates['corresponding_author_certificate'] = str(pdf_path)
+                certificate_updates['corresponding_author_certificate'] = certificate_storage_path
             elif i == 1:
-                certificate_updates['additional_author_cert_1'] = str(pdf_path)
+                certificate_updates['additional_author_cert_1'] = certificate_storage_path
             elif i == 2:
-                certificate_updates['additional_author_cert_2'] = str(pdf_path)
+                certificate_updates['additional_author_cert_2'] = certificate_storage_path
             elif i == 3:
-                certificate_updates['additional_author_cert_3'] = str(pdf_path)
+                certificate_updates['additional_author_cert_3'] = certificate_storage_path
             elif i == 4:
-                certificate_updates['additional_author_cert_4'] = str(pdf_path)
+                certificate_updates['additional_author_cert_4'] = certificate_storage_path
             elif i == 5:
-                certificate_updates['additional_author_cert_5'] = str(pdf_path)
+                certificate_updates['additional_author_cert_5'] = certificate_storage_path
 
         if certificate_updates:
             certificate_updates["certificate_sha256"] = hashlib.sha256(
@@ -166,3 +179,34 @@ def generate_certificates(paper_id):
 if __name__ == "__main__":
     paper_id = input("Enter Paper ID: ")
     generate_certificates(paper_id)
+
+
+def _write_pdf_certificate(path, author_name, title, paper_id, date_str):
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.colors import HexColor
+    from reportlab.pdfgen import canvas
+
+    document = canvas.Canvas(str(path), pagesize=landscape(A4))
+    width, height = landscape(A4)
+    document.setStrokeColor(HexColor("#1d4ed8"))
+    document.setLineWidth(4)
+    document.rect(28, 28, width - 56, height - 56)
+    document.setFillColor(HexColor("#0f172a"))
+    document.setFont("Helvetica-Bold", 26)
+    document.drawCentredString(width / 2, height - 105, "CERTIFICATE OF PUBLICATION")
+    document.setFont("Helvetica", 13)
+    document.setFillColor(HexColor("#334155"))
+    document.drawCentredString(width / 2, height - 145, "International Scientific and Innovative Research Publications")
+    document.setFont("Helvetica", 14)
+    document.drawCentredString(width / 2, height - 205, "This certificate is presented to")
+    document.setFillColor(HexColor("#1d4ed8"))
+    document.setFont("Helvetica-Bold", 24)
+    document.drawCentredString(width / 2, height - 250, str(author_name or "Researcher"))
+    document.setFillColor(HexColor("#334155"))
+    document.setFont("Helvetica", 13)
+    document.drawCentredString(width / 2, height - 295, "for the publication of the research paper")
+    document.setFont("Helvetica-Bold", 15)
+    document.drawCentredString(width / 2, height - 330, str(title or "Untitled research paper")[:110])
+    document.setFont("Helvetica", 11)
+    document.drawCentredString(width / 2, 95, f"Paper ID: {paper_id}    |    Date: {date_str}")
+    document.save()
