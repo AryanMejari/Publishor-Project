@@ -66,3 +66,26 @@ challenges through the moderation endpoint.
    login. Render's free service sleeps when idle and its local filesystem is
    ephemeral; Firebase Firestore preserves metadata, but uploaded files,
    certificates, and reports need Firebase Storage before production use.
+
+   ## Deploying on Vercel
+
+   Vercel is also supported through `api/index.py` and `vercel.json`.
+
+   1. Import `AryanMejari/Publishor-Project` into Vercel and select the `main`
+      branch.
+   2. Leave the framework preset as **Other**. Vercel will detect the Python
+      function from `api/index.py`.
+   3. Add the variables from `.env.example` under **Project Settings →
+      Environment Variables**. Paste the complete Firebase service-account JSON
+      into `FIREBASE_SERVICE_ACCOUNT_JSON`; do not use a local file path.
+   4. Deploy. Do not use the Gunicorn start command on Vercel; Vercel invokes
+      `api/index.py` as the serverless function.
+   5. Test `/`, `/community`, `/api/community/papers`, and a Firestore login.
+
+   Vercel functions have execution-time and filesystem limits. The existing
+   submission flow starts certificate, email, and review work in background
+   threads and writes files locally, so those operations are not reliable after a
+   serverless response. For a reliable Vercel deployment, move uploads,
+   certificates, and reports to Firebase Storage and move long-running review
+   work to a queued worker or scheduled service. Firestore metadata and the
+   community features remain suitable for Vercel.
