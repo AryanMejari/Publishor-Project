@@ -780,6 +780,7 @@ def generate_certificates_background(paper_id):
 if __name__ == '__main__':
     initialize_firebase()
     print("Firebase initialized successfully")
-    print("Server starting on http://127.0.0.1:5000")
+    port = int(os.getenv("PORT", "5000"))
+    print(f"Server starting on http://127.0.0.1:{port}")
     
-    app.run(debug=True, port=5000)
+    app.run(debug=os.getenv("FLASK_DEBUG", "").lower() == "true", host="0.0.0.0", port=port)

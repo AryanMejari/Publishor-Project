@@ -51,3 +51,18 @@ stored as Werkzeug hashes, never as plaintext. Set `FLASK_SECRET_KEY` in
 `COMMUNITY_MODERATOR_EMAILS` to a comma-separated allowlist of trusted
 moderator account emails; only those accounts can approve or reject pending
 challenges through the moderation endpoint.
+
+## Deploying on Render
+
+1. Create a Render Web Service and connect the `AryanMejari/Publishor-Project`
+   GitHub repository.
+2. Select the `main` branch, choose the Python runtime, and use:
+   - Build command: `pip install -r requirements.txt`
+   - Start command: `gunicorn --bind 0.0.0.0:$PORT server:app`
+3. Add every variable from `.env.example` in Render's Environment settings.
+   For `FIREBASE_SERVICE_ACCOUNT_JSON`, paste the complete Firebase service
+   account JSON as one-line JSON, not a local Windows file path.
+4. Deploy and test `/`, `/community`, `/verify/<paper-id>`, and a Firestore
+   login. Render's free service sleeps when idle and its local filesystem is
+   ephemeral; Firebase Firestore preserves metadata, but uploaded files,
+   certificates, and reports need Firebase Storage before production use.
