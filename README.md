@@ -87,9 +87,13 @@ Create a free Cloudinary account and add `CLOUDINARY_CLOUD_NAME`,
 Vercel. The Vercel submission path stores the manuscript, screening report,
 and certificates in Cloudinary. It runs the
 review, certificate generation, and email delivery synchronously before
-returning success, so no background thread is required. On Linux/Vercel,
-certificate creation uses the included ReportLab PDF fallback because
-Microsoft Word-based `docx2pdf` conversion is unavailable there.
+returning success, so no background thread is required. Screening reports
+are generated as PDF files. On Linux/Vercel, Microsoft Word-based
+`docx2pdf` conversion is unavailable, so certificates use the original
+`templates/certificate_template.docx` design and delivers the result as
+PDF. Local Windows installations with Word convert the populated DOCX
+directly; Vercel uses the checked-in PDF rendering of that same template
+because Microsoft Word is unavailable in serverless functions.
 
 Vercel still imposes a serverless execution timeout. Keep manuscripts
 reasonably sized and use the deterministic screening fallback if Gemini makes

@@ -20,7 +20,7 @@ def upload_bytes(data: bytes, path: str, content_type: str) -> str:
     _configure_cloudinary()
     result = cloudinary.uploader.upload(
         BytesIO(data),
-        public_id=path.rsplit(".", 1)[0],
+        public_id=path,
         resource_type="raw",
         overwrite=True,
         use_filename=False,

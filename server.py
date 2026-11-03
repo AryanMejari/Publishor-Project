@@ -698,8 +698,8 @@ def download_review_report():
     return send_file(
         BytesIO(report_bytes),
         as_attachment=True,
-        download_name=os.path.basename(report_path),
-        mimetype="text/plain",
+        download_name=f"{paper_id}_screening_report.pdf",
+        mimetype="application/pdf",
     )
 
 
@@ -732,11 +732,19 @@ def download_certificate():
         return send_file(path, as_attachment=True)
     if certificate_bytes is None:
         return jsonify({'error': 'File not found'}), 404
+    is_docx = path.lower().endswith(".docx")
+    filename = os.path.basename(path)
+    if not filename.lower().endswith((".pdf", ".docx")):
+        filename = f"publication_certificate.{'docx' if is_docx else 'pdf'}"
     return send_file(
         BytesIO(certificate_bytes),
         as_attachment=True,
-        download_name=os.path.basename(path),
-        mimetype="application/pdf",
+        download_name=filename,
+        mimetype=(
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            if is_docx
+            else "application/pdf"
+        ),
     )
 
 # @app.route('/papers')

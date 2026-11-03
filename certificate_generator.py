@@ -1,6 +1,7 @@
 import os
 import hashlib
 from pathlib import Path
+import fitz
 from docx import Document
 from docx2pdf import convert
 from docx.shared import RGBColor, Pt
@@ -103,7 +104,7 @@ def generate_certificates(paper_id):
         authors = [name for name in authors if name]
         certificates_dir = Path(os.getenv("ISIRP_TEMP_DIR", "/tmp")) / "isirp-certificates"
         certificates_dir.mkdir(exist_ok=True)
-        pdf_paths = []
+        certificate_paths = []
 
         # Format date properly
         if isinstance(paper.get('submission_date'), datetime):
@@ -133,9 +134,11 @@ def generate_certificates(paper_id):
                 convert(str(docx_path), str(pdf_path))
                 docx_path.unlink()  # remove Word file if PDF created
             except Exception as e:
-                print(f"docx2pdf failed: {e}. Creating a ReportLab PDF fallback.")
+                # Vercel/Linux does not provide Microsoft Word. Render the
+                # pre-converted copy of the same original template instead.
+                print(f"docx2pdf failed: {e}. Rendering the original PDF template.")
                 docx_path.unlink(missing_ok=True)
-                _write_pdf_certificate(
+                _render_certificate_from_template(
                     pdf_path,
                     author_name,
                     paper.get("paper_title"),
@@ -143,7 +146,7 @@ def generate_certificates(paper_id):
                     date_str,
                 )
 
-            pdf_paths.append(str(pdf_path))
+            certificate_paths.append(str(pdf_path))
             certificate_storage_path = upload_bytes(
                 pdf_path.read_bytes(),
                 f"certificates/{pdf_path.name}",
@@ -166,47 +169,59 @@ def generate_certificates(paper_id):
 
         if certificate_updates:
             certificate_updates["certificate_sha256"] = hashlib.sha256(
-                Path(pdf_paths[0]).read_bytes()
+                Path(certificate_paths[0]).read_bytes()
             ).hexdigest()
             update_paper(paper.get('paper_id'), certificate_updates)
 
         send_certificates_email(
             paper.get('corresponding_author_email'),
             paper.get('paper_id'),
-            pdf_paths
+            certificate_paths
         )
+
+def _render_certificate_from_template(path, author_name, title, paper_id, date_str):
+    template_path = BASE_DIR / "templates" / "certificate_template.pdf"
+    if not template_path.is_file():
+        raise FileNotFoundError(f"Certificate PDF template not found: {template_path}")
+
+    document = fitz.open(template_path)
+    page = document[0]
+    page.insert_textbox(
+        fitz.Rect(70, 395, 525, 430),
+        str(author_name or ""),
+        fontname="hebo",
+        fontsize=16,
+        color=(0, 0.2, 0.6),
+        align=fitz.TEXT_ALIGN_CENTER,
+    )
+    page.insert_textbox(
+        fitz.Rect(70, 455, 525, 490),
+        str(title or ""),
+        fontname="hebo",
+        fontsize=13,
+        color=(0, 0.2, 0.6),
+        align=fitz.TEXT_ALIGN_CENTER,
+    )
+    page.insert_textbox(
+        fitz.Rect(45, 510, 525, 545),
+        str(paper_id or ""),
+        fontname="helv",
+        fontsize=11,
+        color=(0.6, 0, 0),
+        align=fitz.TEXT_ALIGN_CENTER,
+    )
+    page.insert_textbox(
+        fitz.Rect(210, 540, 390, 575),
+        str(date_str or ""),
+        fontname="helv",
+        fontsize=11,
+        color=(0.6, 0, 0),
+        align=fitz.TEXT_ALIGN_CENTER,
+    )
+    document.save(path)
+    document.close()
+
 
 if __name__ == "__main__":
     paper_id = input("Enter Paper ID: ")
     generate_certificates(paper_id)
-
-
-def _write_pdf_certificate(path, author_name, title, paper_id, date_str):
-    from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.lib.colors import HexColor
-    from reportlab.pdfgen import canvas
-
-    document = canvas.Canvas(str(path), pagesize=landscape(A4))
-    width, height = landscape(A4)
-    document.setStrokeColor(HexColor("#1d4ed8"))
-    document.setLineWidth(4)
-    document.rect(28, 28, width - 56, height - 56)
-    document.setFillColor(HexColor("#0f172a"))
-    document.setFont("Helvetica-Bold", 26)
-    document.drawCentredString(width / 2, height - 105, "CERTIFICATE OF PUBLICATION")
-    document.setFont("Helvetica", 13)
-    document.setFillColor(HexColor("#334155"))
-    document.drawCentredString(width / 2, height - 145, "International Scientific and Innovative Research Publications")
-    document.setFont("Helvetica", 14)
-    document.drawCentredString(width / 2, height - 205, "This certificate is presented to")
-    document.setFillColor(HexColor("#1d4ed8"))
-    document.setFont("Helvetica-Bold", 24)
-    document.drawCentredString(width / 2, height - 250, str(author_name or "Researcher"))
-    document.setFillColor(HexColor("#334155"))
-    document.setFont("Helvetica", 13)
-    document.drawCentredString(width / 2, height - 295, "for the publication of the research paper")
-    document.setFont("Helvetica-Bold", 15)
-    document.drawCentredString(width / 2, height - 330, str(title or "Untitled research paper")[:110])
-    document.setFont("Helvetica", 11)
-    document.drawCentredString(width / 2, 95, f"Paper ID: {paper_id}    |    Date: {date_str}")
-    document.save()

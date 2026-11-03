@@ -5,11 +5,27 @@ import re
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+from html import escape
 from pathlib import Path
 from typing import Any, Dict, List
 
 from dotenv import load_dotenv
 from firebase_admin import firestore as admin_firestore
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import (
+    ListFlowable,
+    ListItem,
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 from firebase_store import get_firestore_client, get_paper_by_id, update_paper
 from firebase_storage import upload_bytes
@@ -177,6 +193,168 @@ def _report_text(paper: Dict[str, Any], analysis: Dict[str, Any], generated_at: 
     return "\n".join(lines)
 
 
+def _write_pdf_report(
+    path: Path,
+    paper: Dict[str, Any],
+    analysis: Dict[str, Any],
+    generated_at: str,
+) -> None:
+    """Create a readable PDF version of the screening report."""
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name="ReportTitle",
+        parent=styles["Title"],
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#172554"),
+        fontSize=18,
+        leading=23,
+        spaceAfter=5 * mm,
+    ))
+    styles.add(ParagraphStyle(
+        name="ReportSubtitle",
+        parent=styles["Normal"],
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#475569"),
+        fontSize=9,
+        leading=12,
+        spaceAfter=7 * mm,
+    ))
+    styles.add(ParagraphStyle(
+        name="SectionHeading",
+        parent=styles["Heading2"],
+        textColor=colors.HexColor("#1e3a8a"),
+        fontSize=12,
+        leading=15,
+        spaceBefore=5 * mm,
+        spaceAfter=2 * mm,
+    ))
+    styles.add(ParagraphStyle(
+        name="BodySmall",
+        parent=styles["BodyText"],
+        fontSize=9,
+        leading=13,
+        textColor=colors.HexColor("#1f2937"),
+    ))
+    styles.add(ParagraphStyle(
+        name="BulletSmall",
+        parent=styles["BodyText"],
+        fontSize=9,
+        leading=13,
+        leftIndent=12,
+        firstLineIndent=-7,
+        textColor=colors.HexColor("#1f2937"),
+    ))
+
+    def paragraph(value: Any, style: str = "BodySmall") -> Paragraph:
+        return Paragraph(escape(str(value)).replace("\n", "<br/>"), styles[style])
+
+    story = [
+        Paragraph("ISIRP Automated Academic Screening Report", styles["ReportTitle"]),
+        Paragraph(
+            "International Scientific and Innovative Research Publications",
+            styles["ReportSubtitle"],
+        ),
+    ]
+    metadata = [
+        [paragraph("<b>Paper ID</b>"), paragraph(paper.get("paper_id", ""))],
+        [paragraph("<b>Title</b>"), paragraph(paper.get("paper_title", ""))],
+        [paragraph("<b>Author</b>"), paragraph(paper.get("corresponding_author_name", ""))],
+        [paragraph("<b>Generated</b>"), paragraph(generated_at)],
+    ]
+    metadata_table = Table(metadata, colWidths=[30 * mm, 145 * mm])
+    metadata_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#eef2ff")),
+        ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#c7d2fe")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#e2e8f0")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.extend([metadata_table, Spacer(1, 4 * mm)])
+
+    story.extend([
+        Paragraph("Important disclosure", styles["SectionHeading"]),
+        paragraph(analysis["disclosure"]),
+        Paragraph("Screening scores", styles["SectionHeading"]),
+    ])
+    score_rows = [[paragraph("<b>Metric</b>"), paragraph("<b>Score</b>")]]
+    score_rows.extend(
+        [paragraph(name.replace("_", " ").title()), paragraph(f"{score}/100")]
+        for name, score in analysis["scores"].items()
+    )
+    score_table = Table(score_rows, colWidths=[130 * mm, 45 * mm])
+    score_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#172554")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#e2e8f0")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(score_table)
+
+    story.extend([
+        Paragraph("Document metrics", styles["SectionHeading"]),
+        paragraph(
+            f"Word count: {analysis['word_count']:,}<br/>"
+            f"Detected citations: {analysis['citation_count']}"
+        ),
+        Paragraph("Section checks", styles["SectionHeading"]),
+    ])
+    section_rows = [[paragraph("<b>Section</b>"), paragraph("<b>Status</b>")]]
+    section_rows.extend(
+        [paragraph(section.title()), paragraph("Present" if present else "Not detected")]
+        for section, present in analysis["section_checks"].items()
+    )
+    section_table = Table(section_rows, colWidths=[130 * mm, 45 * mm])
+    section_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#172554")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#e2e8f0")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(section_table)
+
+    def add_bullets(title: str, values: List[str]) -> None:
+        story.append(Paragraph(title, styles["SectionHeading"]))
+        story.append(ListFlowable(
+            [ListItem(paragraph(value, "BulletSmall"), bulletColor=colors.HexColor("#1d4ed8"))
+             for value in values],
+            bulletType="bullet",
+            start="circle",
+            leftIndent=14,
+        ))
+
+    add_bullets("Findings", analysis["findings"])
+    add_bullets("Counter-arguments to consider", analysis["counter_arguments"])
+    add_bullets("Future directions", analysis["future_directions"])
+
+    if analysis.get("ai_review"):
+        story.append(Paragraph("Optional AI review", styles["SectionHeading"]))
+        story.append(paragraph(json.dumps(analysis["ai_review"], indent=2, ensure_ascii=False)))
+
+    document = SimpleDocTemplate(
+        str(path),
+        pagesize=A4,
+        rightMargin=18 * mm,
+        leftMargin=18 * mm,
+        topMargin=16 * mm,
+        bottomMargin=16 * mm,
+        title=f"ISIRP Screening Report - {paper.get('paper_id', '')}",
+    )
+    document.build(story)
+
+
 def run_review(paper_id: str, manuscript_path: str) -> str:
     """Run local screening and persist results for the existing dashboard."""
     started_at = datetime.now(timezone.utc).isoformat()
@@ -193,15 +371,16 @@ def run_review(paper_id: str, manuscript_path: str) -> str:
             analysis["counter_arguments"] = ai_review.get("counter_arguments") or analysis["counter_arguments"]
             analysis["future_directions"] = ai_review.get("future_directions") or analysis["future_directions"]
             analysis["findings"].extend(ai_review.get("concerns", [])[:5])
-        report_text = _report_text(paper, analysis, datetime.now(timezone.utc).isoformat())
-        report_hash = hashlib.sha256(report_text.encode("utf-8")).hexdigest()
-        report_path = REPORTS_DIR / f"{paper_id}_screening_report.txt"
+        generated_at = datetime.now(timezone.utc).isoformat()
+        report_path = REPORTS_DIR / f"{paper_id}_screening_report.pdf"
         report_path.parent.mkdir(exist_ok=True)
-        report_path.write_text(report_text, encoding="utf-8")
+        _write_pdf_report(report_path, paper, analysis, generated_at)
+        report_bytes = report_path.read_bytes()
+        report_hash = hashlib.sha256(report_bytes).hexdigest()
         report_storage_path = upload_bytes(
-            report_text.encode("utf-8"),
-            f"review-reports/{paper_id}_screening_report.txt",
-            "text/plain; charset=utf-8",
+            report_bytes,
+            f"review-reports/{paper_id}_screening_report.pdf",
+            "application/pdf",
         )
         completed_at = datetime.now(timezone.utc).isoformat()
         update_paper(
